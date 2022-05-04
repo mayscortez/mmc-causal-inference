@@ -1,5 +1,7 @@
 from nci_lin_setup import *
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 diagmax = 10   # maximum norm of direct effect
 r = 2
@@ -51,3 +53,16 @@ for s in sizes:
     
 df = pd.DataFrame.from_records(results)
 df.to_csv('outputFiles/'+graph+'-uniprop-size.csv')
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+p = sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df, ci='sd', legend='brief', markers=True)
+p.set_xlabel("Population Size (n)", fontsize = 12)
+
+p.set_ylabel("Relative Bias", fontsize = 12)
+ax.set_title('Performance of Estimators', fontsize=16)
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles=handles, labels=labels) # title="Custom Title"s
+
+plt.savefig('outputFiles/'+graph+'-uniprop-size.pdf',format='pdf')
