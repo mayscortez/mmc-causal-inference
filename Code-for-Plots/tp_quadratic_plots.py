@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 import sys
 
-path_to_module = '/Users/mayleencortez/Desktop/NetworkCausalInference/Code/'
+path_to_module = '/Users/mayleencortez/Desktop/NetworkCausalInference/mmc-causal-inference/Code-for-Experiments'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
@@ -24,10 +24,10 @@ df = pd.read_csv(save_path+graph+'-tp-neurips-quadratic-full-data.csv')
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df, ci='sd', legend='brief', markers=True)
+sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['p'] > 0.10], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Treatment Probability (p)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
-ax.set_title('Performance of Estimator', fontsize=16)
+ax.set_title('Performance of Estimator (n=50000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 
@@ -38,10 +38,10 @@ plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(['Graph-Agnostic','LeastSqs-Prop','LeastSqs-Num'])], ci='sd', legend='brief', markers=True)
+sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['p'] > 0.10) & df['Estimator'].isin(['Graph-Agnostic','LeastSqs-Prop','LeastSqs-Num'])], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Treatment Probability (p)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
-ax.set_title('Performance of Estimators', fontsize=16)
+ax.set_title('Performance of Estimators (n=50000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 plt.savefig(save_path+graph+"-tp-neurips-quadratic-oursAndLS.pdf")
@@ -51,10 +51,10 @@ plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(['Graph-Agnostic','Interp-Lin','Spline-Lin', 'Spline-Quad'])], ci='sd', legend='brief', markers=True)
+sns.lineplot(x='p', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['p'] > 0.10) & df['Estimator'].isin(['Graph-Agnostic','Interp-Lin','Spline-Lin', 'Spline-Quad'])], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Treatment Probability (p)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
-ax.set_title('Performance of Estimators', fontsize=16)
+ax.set_title('Performance of Estimators (n=50000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 plt.savefig(save_path+graph+"-tp-neurips-quadratic-oursAndinterp.pdf")
