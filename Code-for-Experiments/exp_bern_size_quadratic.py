@@ -13,7 +13,7 @@ import pandas as pd
 import seaborn as sns
 import sys
 
-path_to_module = '/home/mayleencortez'
+path_to_module = '/home/mayleencortez/mmc-causal-inference/Code-for-Experiments'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
