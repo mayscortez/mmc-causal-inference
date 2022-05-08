@@ -13,6 +13,7 @@ import seaborn as sns
 import sys
 
 path_to_module = '/home/mayleencortez/mmc-causal-inference/Code-for-Experiments'
+
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
@@ -24,7 +25,7 @@ save_path = '/home/mayleencortez/datafiles/'
 # Run Experiment: Varying Size of Network
 ###########################################
 
-T = 1        # number of trials
+T = 1000        # number of trials
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
@@ -32,7 +33,7 @@ p = 0.05        # treatment probability
 
 results = []
 
-sizes = np.array([500, 1000])#, 2000, 4000, 8000, 12000, 16000, 20000, 24000, 28000])
+sizes = np.array([500, 1000, 2000, 4000, 8000, 12000, 16000, 20000, 24000, 28000])
 for n in sizes:
     print(n)
 
@@ -102,7 +103,7 @@ r = offdiag_max/diag_max
 
 d = 1     # influence and malleability dimension size
 
-p_treatments = np.array([0.03, 0.06])#, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
+p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
 results = []
 
 A = ncls.config_model_nx(n, t = n*1000, law = "out")
@@ -170,7 +171,7 @@ diagmax = 10   # maximum norm of direct effect
 
 p = 0.06    # treatment probability
 
-ratio = [0.25,0.5]#,0.75,1,1/0.75,1/0.5,3,1/0.25]
+ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
 
 ####### Generate Network ########
