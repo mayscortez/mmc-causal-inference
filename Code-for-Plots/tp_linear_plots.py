@@ -25,7 +25,7 @@ ax.set_title('Performance of Estimators (n=10000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 
-plt.savefig(save_path+graph+"-tp-neurips-linear-all.pdf")
+plt.savefig(save_path+graph+"-tp-bern-linear-all.pdf")
 plt.close()
 
 # Plot with just our estimators

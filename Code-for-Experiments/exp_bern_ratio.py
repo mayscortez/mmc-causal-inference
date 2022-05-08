@@ -83,4 +83,4 @@ for r in ratio:
         results.append({'Estimator': 'Diff-Means-Frac', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_fraction[i]-TTE)/TTE})
 
 df = pd.DataFrame.from_records(results)
-df.to_csv(save_path+graph+'-ratio-neurips-linear-full-data.csv')
+df.to_csv(save_path+graph+'-ratio-bern-linear-full-data.csv')

@@ -75,4 +75,4 @@ for r in ratio:
         results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl[i]-TTE)/TTE})
         
 df = pd.DataFrame.from_records(results)
-df.to_csv(save_path+graph+'-ratio-neurips-quadratic-full-data.csv')  
+df.to_csv(save_path+graph+'-ratio-bern-quadratic-full-data.csv')  

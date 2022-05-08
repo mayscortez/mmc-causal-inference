@@ -18,7 +18,7 @@ save_path = '/Users/mayleencortez/Desktop/NetworkCausalInference/dataFromSSH/'
 
 # Create and save plots
 graph = "con-outpwr"
-df = pd.read_csv(save_path+graph+'-tp-neurips-quadratic-full-data.csv')
+df = pd.read_csv(save_path+graph+'-tp-bern-quadratic-full-data.csv')
 
 # Plot with all the estimators
 fig = plt.figure()
