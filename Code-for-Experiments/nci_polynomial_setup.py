@@ -1,3 +1,4 @@
+from dataclasses import replace
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -74,33 +75,27 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
   beta (int): degree of potential outcomes model
   p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
   n (int): size of population
-  P (numpy array): treatment probabilities for each time step
+  K (numpy array): total number of individuals treated by each timestep
   '''
-  ### Compute P = [p0, p1, ... , pbeta] via pi = (i+1)p/(beta+1) ###
+  ### Compute K = [k0, k1, ... , kbeta] via ki = i*n*p/beta ###
   if K.size == 0:
-    #TODO
-    pass
+    fun = lambda i: np.floor((i/beta)*np.floor(p*n)).astype(int)
+    K = np.fromfunction(fun, shape=(beta+1,))
 
   ### Initialize ###
-  L = np.zeros(beta+1)   # for the coefficients L_t
+  L = np.zeros(beta+1)             # for the coefficients L_t
   Z = np.zeros(shape=(beta+1,n))   # for each treatment sample, z_t
-  z0 = np.zeros(n)       # initial treatment vector
+  indices = np.arange(n)           # right now no one is treated
+  rng = np.random.default_rng()    # random generator
 
   ### staggered rollout experiment ###
-  for t in range(beta+1):
-    """
-    ## sample treatment vector ##
-    # TODO: should do something about replacement?
-    zt = ncls.completeRD(n,p)
+  # indices: holds indices of entries equal to 0 in treatment vector
+  # to_treat: from indices, randomly choose a specific subset to treat
+  for t in range(beta):
+    to_treat = rng.choice(indices, K[t+1]-K[t], replace=False)
+    Z[t+1:,to_treat] = 1 
 
-    ## if treated before, should still be treated ##
-    if t > 0:
-      Z[t,:] = np.where(Z[t-1,:] > 0, Z[t-1,:], zt)
-    else:
-      Z[t,:] = zt
-    """
-
-    ## computing _t ##
+    ## computing l_t for t=0 to t=beta##
     n_minusK = n - K            # [n-k0, n-k1, ... , n-k_beta]
     kt_minusK = K[t] - K        # [kt-k0, kt-k1, ... , kt-k_beta]
     minusK = -1*K               # [-k0, -k1, ... , -k_beta]
@@ -109,7 +104,18 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
     fraction2 = minusK/kt_minusK
     L[t] = np.prod(fraction1) - np.prod(fraction2)
 
-  return Z, L
+    # Get new indices of the nontreated individuals
+    indices = np.where(Z[t+1,:]==0)[0]
+
+  ## computing l_t for t = beta+1##
+  n_minusK = n - K            # [n-k0, n-k1, ... , n-k_beta]
+  kt_minusK = K[beta] - K        # [kt-k0, kt-k1, ... , kt-k_beta]
+  minusK = -1*K               # [-k0, -k1, ... , -k_beta]
+  n_minusK[beta] = 1; kt_minusK[beta] = 1; minusK[beta] = 1
+  fraction1 = n_minusK/kt_minusK
+  fraction2 = minusK/kt_minusK
+  L[beta] = np.prod(fraction1) - np.prod(fraction2)
+  return Z, L, K
 
 def outcome_sums(beta, Y, Z):
   '''
