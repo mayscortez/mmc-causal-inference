@@ -21,7 +21,6 @@ import nci_polynomial_setup as ncps
 
 save_path = '/home/mayleencortez/datafiles/'
 
-n = 50000        # number of nodes in network
 diag_max = 5     # maximum norm of direct effect
 offdiag_max = 5  # maximum norm of indirect effect
 r = offdiag_max/diag_max
@@ -33,9 +32,6 @@ d = 1     # influence and malleability dimension size
 
 sizes = np.array([5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000])
 results = []
-
-# baseline parameters
-alpha = np.random.rand(n)
 
 for n in sizes:
     print(n)
@@ -49,6 +45,9 @@ for n in sizes:
     C = C*A
     C = ncls.normalized_weights(C, diag=diag_max, offdiag=offdiag_max)
 
+    # baseline parameters
+    alpha = np.random.rand(n)
+    
     # potential outcomes model
     fy = lambda z: ncls.linear_pom(C,alpha,z)
 
