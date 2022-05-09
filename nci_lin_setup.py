@@ -449,6 +449,25 @@ def normalized_weights(C, diag=10, offdiag=8):
 
   return C
 
+def printWeights(C,alpha,filename):
+  f = open(filename, 'w')
+  n = C.shape[0]
+  print("baseline values", file=f)
+  print("n: "+str(n), file=f)
+  for i in range(n):
+    print(str(alpha[i]), file=f)
+  nnz = np.count_nonzero(C)
+  print("treatment effect weights", file=f)
+  print("edges: "+str(nnz), file=f)
+  (ind1,ind2) = np.nonzero(C)
+  for i in range(nnz):
+    a = ind1[i]
+    b = ind2[i]
+    print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
+  f.close()
+
+
+
 # Potential Outcomes Models
 
 linear_pom = lambda C,alpha, z : C.dot(z) + alpha
