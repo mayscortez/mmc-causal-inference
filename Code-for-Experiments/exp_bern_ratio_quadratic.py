@@ -22,7 +22,7 @@ import nci_polynomial_setup as ncps
 save_path = 'mmc-causal-inference/outputFiles/'
 
 n = 50000        # number of nodes in network
-diagmax = 10   # maximum norm of direct effect
+diag = 10   # maximum norm of direct effect
 beta = 2
 
 p = 0.50
@@ -40,12 +40,15 @@ alpha = np.random.rand(n)
 
 for r in ratio:
     print('ratio '+str(r))
-    offdiagmax = r*diagmax   # maximum norm of indirect effect
+    offdiag = r*diag   # maximum norm of indirect effect
+
+    # weights from simple model
+    C = ncls.simpleWeights(A, diag, offdiag)
 
     # Generate (normalized) weights
-    C = ncls.weights_node_deg_unif(A, d)
-    C = C*A
-    C = ncls.normalized_weights(C, diag=diagmax, offdiag=offdiagmax)
+    # C = ncls.weights_node_deg_unif(A, d)
+    # C = C*A
+    # C = ncls.normalized_weights(C, diag, offdiag)
 
     # potential outcomes model
     fy = lambda z: ncls.linear_pom(C,alpha,z)

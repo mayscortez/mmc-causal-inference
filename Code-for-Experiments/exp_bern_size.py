@@ -13,7 +13,7 @@ import pandas as pd
 import seaborn as sns
 import sys
 
-path_to_module = 'Code-for-Experiments/'
+path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
@@ -41,18 +41,8 @@ for n in sizes:
     # null effects
     alpha = np.random.rand(n)
 
-    #simplified model for generating the weights
-    C_diag = diag*np.random.rand(n)
-    C_offdiag = offdiag*np.random.rand(n)
-
-    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
-    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
-    C = np.dot(np.diag(in_deg), A - np.eye(n))
-    col_sum = np.sum(C,axis=0)
-    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
-    C = C / col_sum
-    C = np.dot(C, np.diag(C_offdiag))
-    np.fill_diagonal(C, C_diag)
+    # weights from simple model
+    C = ncls.simpleWeights(A, diag, offdiag)
 
     # # Generate normalized weights
     # C = ncls.weights_node_deg_unif(A)

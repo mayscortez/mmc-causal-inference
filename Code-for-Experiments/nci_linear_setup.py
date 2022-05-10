@@ -16,7 +16,10 @@ def constrained_sum_sample_nonneg(n, total):
 
     return [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
 
-# functions to create random networks
+########################################
+# Functions to generate random networks
+########################################
+
 def erdos_renyi(n,p,undirected=False):
     '''
     Generates a random network of n nodes using the Erdos-Renyi method,
@@ -195,7 +198,31 @@ def loadPartition(filename, n):
 
     return clusters
 
+########################################
 # Functions to generate network weights
+########################################
+
+def simpleWeights(A, diag=5, offdiag=5):
+    '''
+    Returns weights generated from simpler model
+
+    A (numpy array): adjacency matrix of the network
+    diag (float): maximum norm of direct effects
+    offidiag (float): maximum norm of the indirect effects
+    '''
+    n = A.shape[0]
+    C_diag = diag*np.random.rand(n)
+    C_offdiag = offdiag*np.random.rand(n)
+
+    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    C = np.dot(np.diag(in_deg), A - np.eye(n))
+    col_sum = np.sum(C,axis=0)
+    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
+    C = C / col_sum
+    C = np.dot(C, np.diag(C_offdiag))
+    np.fill_diagonal(C, C_diag)
+    return C
 
 def weights_im_normal(n, d=1, sigma=0.1, neg=0):
     '''
@@ -503,11 +530,14 @@ def loadWeights(filename,n):
         C[int(ind[0]),int(ind[1])] = float(ind[2])
     return (C,alpha)
 
-# Potential Outcomes Models
-
+########################################
+# Linear Potential Outcomes Model
+########################################
 linear_pom = lambda C,alpha, z : C.dot(z) + alpha
 
-# Treatment Assignment
+#####################################################
+# Treatment Assignment Mechanisms (Randomized Design)
+#####################################################
 
 bernoulli = lambda n,p : (np.random.rand(n) < p) + 0
 
@@ -568,7 +598,9 @@ def threenet(A):
     print(np.amin(s))
     return clusters
 
+########################################
 # Estimators
+########################################
 
 def est_us(n, p, y, A, z):
     '''
