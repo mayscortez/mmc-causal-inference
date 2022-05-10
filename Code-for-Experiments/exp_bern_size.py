@@ -30,7 +30,7 @@ p = 0.05        # treatment probability
 
 results = []
 
-sizes = np.array([500, 1000, 2000, 4000, 8000, 12000, 16000, 20000, 24000, 28000])
+sizes = np.array([500, 1000, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000])
 for n in sizes:
     print(n)
 

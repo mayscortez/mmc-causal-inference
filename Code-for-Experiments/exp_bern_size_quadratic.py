@@ -30,7 +30,7 @@ p = 0.50
 T = 100  # number of trials
 d = 1     # influence and malleability dimension size
 
-sizes = np.array([5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000])
+sizes = np.array([5000, 7500, 10000, 12500, 15000, 17500, 20000, 22500, 25000, 27500, 30000])
 results = []
 
 for n in sizes:
