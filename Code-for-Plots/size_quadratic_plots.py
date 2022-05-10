@@ -1,24 +1,18 @@
+'''
+Script to plot results from size-bern-quadratic experiment
+(varying size of network; bernoulli RD; quadratic model)
+'''
 # Setup
-import numpy as np
-import random
 import matplotlib.pyplot as plt
-import networkx as nx
-from math import log, ceil
 import pandas as pd
 import seaborn as sns
-import sys
 
-path_to_module = '/Users/mayleencortez/Desktop/NetworkCausalInference/Code/'
-sys.path.append(path_to_module)
-
-import nci_linear_setup as ncls
-import nci_polynomial_setup as ncps
-
-save_path = '/Users/mayleencortez/Desktop/NetworkCausalInference/dataFromSSH/'
+save_path = 'ouputFiles/'
+graph = "con-outpwr" # configuration model with out-degrees distributed as power law
+experiment = "-size-bern-quadratic" # vary size; bernoulli RD; quadratic model
 
 # Create and save plots
-graph = "con-outpwr"
-df = pd.read_csv(save_path+graph+'-size-bern-quadratic-full-data.csv')
+df = pd.read_csv(save_path+graph+experiment+'-full-data.csv')
 
 # Plot with all the estimators
 fig = plt.figure()
@@ -31,7 +25,7 @@ ax.set_title('Performance of Estimator', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 
-plt.savefig(save_path+graph+"-size-neurips-quadratic-all.pdf")
+plt.savefig(save_path+graph+experiment+'-all.pdf')
 plt.close()
 
 # Plot with our estimator and Least sqs
@@ -44,7 +38,7 @@ ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
-plt.savefig(save_path+graph+"-size-neurips-quadratic-oursAndLS.pdf")
+plt.savefig(save_path+graph+experiment+'-oursAndLS.pdf')
 plt.close()
 
 # Plot with graph agnostic and both OLS estimators
@@ -57,5 +51,5 @@ ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
-plt.savefig(save_path+graph+"-size-neurips-quadratic-oursAndinterp.pdf")
+plt.savefig(save_path+graph+experiment+'-oursAndinterp.pdf')
 plt.close()

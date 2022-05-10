@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-save_path = '/Users/mayleencortez/Desktop/NetworkCausalInference/dataFromSSH/'
+save_path = 'ouputFiles/'
 graph = "con-outpwr" # configuration model with out-degrees distributed as power law
 
 #######################

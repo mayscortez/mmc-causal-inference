@@ -1,18 +1,18 @@
+'''
+Script to plot results from tp-bern-linear experiment
+(varying treatment probability; bernoulli RD; linear model)
+'''
 # Setup
 import matplotlib.pyplot as plt
-from math import log, ceil
 import pandas as pd
 import seaborn as sns
-import sys
 
-path_to_module = '/Users/mayleencortez/Desktop/NetworkCausalInference/Code/'
-sys.path.append(path_to_module)
-
-save_path = '/Users/mayleencortez/Desktop/NetworkCausalInference/dataFromSSH/'
+save_path = 'ouputFiles/'
+graph = "con-outpwr" # configuration model with out-degrees distributed as power law
+experiment = "-tp-bern-linear" # vary treatment probability; bernoulli RD; linear model
 
 # Create and save plots
-graph = "con-outpwr"
-df = pd.read_csv(save_path+graph+'-tp-neurips-linear-full-data.csv')
+df = pd.read_csv(save_path+graph+experiment+'-full-data.csv')
 
 # Plot with all the estimators
 fig = plt.figure()
@@ -25,7 +25,7 @@ ax.set_title('Performance of Estimators (n=10000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
 
-plt.savefig(save_path+graph+"-tp-bern-linear-all.pdf")
+plt.savefig(save_path+graph+experiment+'-all.pdf')
 plt.close()
 
 # Plot with just our estimators
@@ -38,7 +38,7 @@ ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators (n=10000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
-plt.savefig(save_path+graph+"-tp-neurips-linear-ours.pdf")
+plt.savefig(save_path+graph+experiment+'-ours.pdf')
 plt.close()
 
 # Plot with graph agnostic and both OLS estimators
@@ -51,7 +51,7 @@ ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators (n=10000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
-plt.savefig(save_path+graph+"-tp-neurips-linear-agnosticAndOls.pdf")
+plt.savefig(save_path+graph+experiment+'-agnosticAndOls.pdf')
 plt.close()
 
 # Plot with graph agnostic and both difference in means estimators
@@ -64,5 +64,5 @@ ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators (n=10000)', fontsize=16)
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles=handles, labels=labels)
-plt.savefig(save_path+graph+"-tp-neurips-linear-agnosticAndDiffMeans.pdf")
+plt.savefig(save_path+graph+experiment+'-agnosticAndDiffMeans.pdf')
 plt.close()
