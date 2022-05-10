@@ -105,7 +105,7 @@ def uniform_degrees(n,sum):
     n: size of network
     sum: number that the entries of the array must add up to
     '''
-    degs = np.ones(n)*np.floor(sum/n)
+    degs = (np.ones(n)*np.floor(sum/n)).astype(int)
     i = 0
     while np.sum(degs) != sum:
         degs[i] += 1
