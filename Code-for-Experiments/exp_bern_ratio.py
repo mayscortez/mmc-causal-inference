@@ -27,7 +27,7 @@ n = 4000
 diag = 10   # maximum norm of direct effect
 
 p = 0.06    # treatment probability
-T = 1000    # number of trials
+T = 100    # number of trials
 
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
@@ -50,7 +50,7 @@ for r in ratio:
     C_offdiag = offdiag*np.random.rand(n)
 
     in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
-    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the out-degree of each node
     C = np.dot(np.diag(in_deg), A - np.eye(n))
     col_sum = np.sum(C,axis=0)
     col_sum = np.where(col_sum != 0, col_sum, col_sum+1)

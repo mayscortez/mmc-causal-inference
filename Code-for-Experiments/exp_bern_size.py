@@ -22,7 +22,7 @@ import nci_polynomial_setup as ncps
 save_path = 'ouputFiles/'
 
 # Run Experiment
-T = 1000        # number of trials
+T = 100        # number of trials
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag

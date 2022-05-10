@@ -26,7 +26,7 @@ diag = 6     # maximum norm of direct effect
 offdiag = 8  # maximum norm of indirect effect
 r = offdiag/diag
 
-T = 1000  # number of trials
+T = 100  # number of trials
 d = 1     # influence and malleability dimension size
 
 p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
@@ -46,7 +46,7 @@ for p in p_treatments:
     C_offdiag = offdiag*np.random.rand(n)
 
     in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
-    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the out-degree of each node
     C = np.dot(np.diag(in_deg), A - np.eye(n))
     col_sum = np.sum(C,axis=0)
     col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
