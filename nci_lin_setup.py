@@ -466,6 +466,23 @@ def printWeights(C,alpha,filename):
     print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
   f.close()
 
+def loadWeights(filename,n):
+    f = open(filename, 'r')
+    next(f)
+    next(f)
+    alpha = np.zeros(n)
+    for i in range(n):
+        line = line.strip()
+        alpha[i] = float(line)
+    next(f)
+    next(f)
+    C = np.zeros((n,n))
+    for line in f:
+        line = line.strip()
+        ind = line.split()
+        C[int(ind[0]),int(ind[1])] = float(ind[2])
+    return (C,alpha)
+
 # Potential Outcomes Models
 
 linear_pom = lambda C,alpha, z : C.dot(z) + alpha

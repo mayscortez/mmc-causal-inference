@@ -27,6 +27,10 @@ for s in sizes:
   C = C*A
   C = normalized_weights(C, diag=diagmax, offdiag=offdiagmax)
 
+  # print/load weights
+  printWeights(C,alpha,'graphs/SW'+str(s)+'.txt')
+  (C,alpha) = loadWeights('graphs/SW'+str(s)+'.txt',n)
+
   # Potential Outcomes Model
   fy = lambda z: linear_pom(C,alpha,z)
 

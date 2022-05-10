@@ -120,58 +120,58 @@ def SBM(clusterSize, probabilities):
     return A
 
 def symmetrizeGraph(A):
-  n = A.shape[0]
-  if A.shape[1] != n:
-    print("Error: adjacency matrix is not square!")
+    n = A.shape[0]
+    if A.shape[1] != n:
+        print("Error: adjacency matrix is not square!")
+        return A
+    for i in range(n):
+        for j in range(i):
+            A[i,j] = A[j,i]
     return A
-  for i in range(n):
-    for j in range(i):
-      A[i,j] = A[j,i]
-  return A
 
 def printGraph(A,filename, symmetric=True):
-  f = open(filename, 'w')
-  print("# graph", file=f)
-  print("# Nodes: "+str(A.shape[0]), file=f)
-  print("# NodeId\tNodeId", file=f)
-  indices = np.argwhere(A)
-  for i in indices:
-    if symmetric and i[0] > i[1]:
-      continue
-    print(str(i[0])+"\t"+str(i[1]), file=f)
-  f.close()
+    f = open(filename, 'w')
+    print("# graph", file=f)
+    print("# Nodes: "+str(A.shape[0]), file=f)
+    print("# NodeId\tNodeId", file=f)
+    indices = np.argwhere(A)
+    for i in indices:
+        if symmetric and i[0] > i[1]:
+                continue
+        print(str(i[0])+"\t"+str(i[1]), file=f)
+    f.close()
 
 def loadGraph(filename, n, symmetric=True):
-  A = np.zeros((n,n))
-  f = open(filename, 'r')
-  next(f)
-  next(f)
-  next(f)
-  for line in f:
-    line = line.strip()
-    ind = line.split()
-    A[int(ind[0]),int(ind[1])] = 1
-    if symmetric:
-      A[int(ind[1]),int(ind[0])] = 1
-  return A
+    A = np.zeros((n,n))
+    f = open(filename, 'r')
+    next(f)
+    next(f)
+    next(f)
+    for line in f:
+        line = line.strip()
+        ind = line.split()
+        A[int(ind[0]),int(ind[1])] = 1
+        if symmetric:
+            A[int(ind[1]),int(ind[0])] = 1
+    return A
 
 def loadPartition(filename, n):
-  partition = np.zeros(n)
-  f = open(filename, 'r')
-  next(f)
-  c_id = 0
-  for line in f:
-    line = line.strip()
-    ind = line.split()
-    for i in ind:
-      partition[int(i)] = c_id
-    c_id += 1
+    partition = np.zeros(n)
+    f = open(filename, 'r')
+    next(f)
+    c_id = 0
+    for line in f:
+        line = line.strip()
+        ind = line.split()
+        for i in ind:
+            partition[int(i)] = c_id
+        c_id += 1
   
-  clusters = np.zeros((n,c_id))
-  for i in range(n):
-    clusters[i,int(partition[int(i)])] = 1
+    clusters = np.zeros((n,c_id))
+    for i in range(n):
+        clusters[i,int(partition[int(i)])] = 1
 
-  return clusters
+    return clusters
 
 # Functions to generate network weights
 
@@ -422,46 +422,63 @@ def weights_node_deg_unif(A, d=1, prop=1, vals=np.array([0,1])):
     return (X.T.dot(W)+E)
 
 def normalized_weights(C, diag=10, offdiag=8):
-  '''
-  Returns normalized weights (or normalized weighted adjacency matrix) as numpy array
+    '''
+    Returns normalized weights (or normalized weighted adjacency matrix) as numpy array
 
-  C (square numpy array): weight matrix (or weighted adjacency matrix)
-  diag (float): controls the magnitude of the diagonal elements
-  offdiag (float): controls the magnitude of the off-diagonal elements
-  '''
-  n = C.shape[0]
+    C (square numpy array): weight matrix (or weighted adjacency matrix)
+    diag (float): controls the magnitude of the diagonal elements
+    offdiag (float): controls the magnitude of the off-diagonal elements
+    '''
+    n = C.shape[0]
 
-  # diagonal elements
-  C_diag = np.ones(n) * diag * np.random.rand(n)
+    # diagonal elements
+    C_diag = np.ones(n) * diag * np.random.rand(n)
 
-  # remove diagonal elements and normalize off-diagonal elements
-  # normalizes each column by the norm of the column (not including the diagonal element)
-  np.fill_diagonal(C, 0)
-  col_norms = np.linalg.norm(C, axis=0)
-  col_norms = np.where(col_norms != 0, col_norms, col_norms+1)
-  C = (C / col_norms) * offdiag * np.random.rand(n)
+    # remove diagonal elements and normalize off-diagonal elements
+    # normalizes each column by the norm of the column (not including the diagonal element)
+    np.fill_diagonal(C, 0)
+    col_norms = np.linalg.norm(C, axis=0)
+    col_norms = np.where(col_norms != 0, col_norms, col_norms+1)
+    C = (C / col_norms) * offdiag * np.random.rand(n)
 
-  # add back the diagonal
-  C += np.diag(C_diag)
+    # add back the diagonal
+    C += np.diag(C_diag)
 
-  return C
+    return C
 
 def printWeights(C,alpha,filename):
-  f = open(filename, 'w')
-  n = C.shape[0]
-  print("baseline values", file=f)
-  print("n: "+str(n), file=f)
-  for i in range(n):
-    print(str(alpha[i]), file=f)
-  nnz = np.count_nonzero(C)
-  print("treatment effect weights", file=f)
-  print("edges: "+str(nnz), file=f)
-  (ind1,ind2) = np.nonzero(C)
-  for i in range(nnz):
-    a = ind1[i]
-    b = ind2[i]
-    print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
-  f.close()
+    f = open(filename, 'w')
+    n = C.shape[0]
+    print("baseline values", file=f)
+    print("n: "+str(n), file=f)
+    for i in range(n):
+        print(str(alpha[i]), file=f)
+    nnz = np.count_nonzero(C)
+    print("treatment effect weights", file=f)
+    print("edges: "+str(nnz), file=f)
+    (ind1,ind2) = np.nonzero(C)
+    for i in range(nnz):
+        a = ind1[i]
+        b = ind2[i]
+        print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
+    f.close()
+
+def loadWeights(filename,n):
+    f = open(filename, 'r')
+    next(f)
+    next(f)
+    alpha = np.zeros(n)
+    for i in range(n):
+        line = line.strip()
+        alpha[i] = float(line)
+    next(f)
+    next(f)
+    C = np.zeros((n,n))
+    for line in f:
+        line = line.strip()
+        ind = line.split()
+        C[int(ind[0]),int(ind[1])] = float(ind[2])
+    return (C,alpha)
 
 # Potential Outcomes Models
 
