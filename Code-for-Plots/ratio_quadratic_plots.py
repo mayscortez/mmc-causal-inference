@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-save_path = 'ouputFiles/'
+save_path = 'mmc-causal-inference/outputFiles/'
 graph = "con-outpwr" # configuration model with out-degrees distributed as power law
 experiment = "-ratio-bern-quadratic" # vary ratio; bernoulli RD; quadratic model
 

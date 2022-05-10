@@ -19,10 +19,10 @@ sys.path.append(path_to_module)
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = 'ouputFiles/'
+save_path = 'mmc-causal-inference/outputFiles/'
 
 # Run Experiment
-T = 100        # number of trials
+T = 50        # number of trials
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
