@@ -13,13 +13,13 @@ import pandas as pd
 import seaborn as sns
 import sys
 
-path_to_module = '/home/mayleencortez/mmc-causal-inference/Code-for-Experiments'
+path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = '/home/mayleencortez/datafiles/'
+save_path = 'mmc-causal-inference/outputFiles/'
 
 n = 4000        # number of nodes in network
 diag = 6     # maximum norm of direct effect
