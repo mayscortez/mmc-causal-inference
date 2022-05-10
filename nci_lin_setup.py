@@ -134,7 +134,7 @@ def symmetrizeGraph(A):
   return A
 
 def printGraph(A,filename, symmetric=True):
-  f = open(filename, 'a')
+  f = open(filename, 'w')
   print("# graph", file=f)
   print("# Nodes: "+str(A.shape[0]), file=f)
   print("# NodeId\tNodeId", file=f)
@@ -465,8 +465,6 @@ def printWeights(C,alpha,filename):
     b = ind2[i]
     print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
   f.close()
-
-
 
 # Potential Outcomes Models
 

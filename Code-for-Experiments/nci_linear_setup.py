@@ -17,7 +17,7 @@ def constrained_sum_sample_nonneg(n, total):
     return [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
 
 # functions to create random networks
-def erdos_renyi(n,p):
+def erdos_renyi(n,p,undirected=False):
     '''
     Generates a random network of n nodes using the Erdos-Renyi method,
     where the probability that an edge exists between two nodes is p.
@@ -27,6 +27,8 @@ def erdos_renyi(n,p):
     A = np.random.rand(n,n)
     A = (A < p) + 0
     A[range(n),range(n)] = 1   # everyone is affected by their own treatment
+    if undirected:
+        A = symmetrizeGraph(A)
     return A
 
 def config_model(di):
@@ -116,6 +118,60 @@ def SBM(clusterSize, probabilities):
     A = (A < p) + 0
     A[range(n),range(n)] = 1   # everyone is affected by their own treatment
     return A
+
+def symmetrizeGraph(A):
+  n = A.shape[0]
+  if A.shape[1] != n:
+    print("Error: adjacency matrix is not square!")
+    return A
+  for i in range(n):
+    for j in range(i):
+      A[i,j] = A[j,i]
+  return A
+
+def printGraph(A,filename, symmetric=True):
+  f = open(filename, 'w')
+  print("# graph", file=f)
+  print("# Nodes: "+str(A.shape[0]), file=f)
+  print("# NodeId\tNodeId", file=f)
+  indices = np.argwhere(A)
+  for i in indices:
+    if symmetric and i[0] > i[1]:
+      continue
+    print(str(i[0])+"\t"+str(i[1]), file=f)
+  f.close()
+
+def loadGraph(filename, n, symmetric=True):
+  A = np.zeros((n,n))
+  f = open(filename, 'r')
+  next(f)
+  next(f)
+  next(f)
+  for line in f:
+    line = line.strip()
+    ind = line.split()
+    A[int(ind[0]),int(ind[1])] = 1
+    if symmetric:
+      A[int(ind[1]),int(ind[0])] = 1
+  return A
+
+def loadPartition(filename, n):
+  partition = np.zeros(n)
+  f = open(filename, 'r')
+  next(f)
+  c_id = 0
+  for line in f:
+    line = line.strip()
+    ind = line.split()
+    for i in ind:
+      partition[int(i)] = c_id
+    c_id += 1
+  
+  clusters = np.zeros((n,c_id))
+  for i in range(n):
+    clusters[i,int(partition[int(i)])] = 1
+
+  return clusters
 
 # Functions to generate network weights
 
@@ -390,6 +446,23 @@ def normalized_weights(C, diag=10, offdiag=8):
 
   return C
 
+def printWeights(C,alpha,filename):
+  f = open(filename, 'w')
+  n = C.shape[0]
+  print("baseline values", file=f)
+  print("n: "+str(n), file=f)
+  for i in range(n):
+    print(str(alpha[i]), file=f)
+  nnz = np.count_nonzero(C)
+  print("treatment effect weights", file=f)
+  print("edges: "+str(nnz), file=f)
+  (ind1,ind2) = np.nonzero(C)
+  for i in range(nnz):
+    a = ind1[i]
+    b = ind2[i]
+    print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
+  f.close()
+
 # Potential Outcomes Models
 
 linear_pom = lambda C,alpha, z : C.dot(z) + alpha
@@ -567,3 +640,34 @@ def diff_in_means_fraction(n, y, A, z, tol):
     treated = 1*(A.dot(z) / (A.dot(np.ones(n))+1e-10) > tol)
     control = 1*(A.dot(1-z) / (A.dot(np.ones(n))+1e-10) > tol)
     return y.dot(treated)/np.sum(treated) - y.dot(control)/np.sum(control)
+
+#Horvitz-Thompson 
+def est_ht(n, p, y, A, z, clusters=np.array([])):
+  if clusters.size == 0:
+    zz = np.prod(np.tile(z/p,(n,1)),axis=1, where=A==1) - np.prod(np.tile((1-z)/(1-p),(n,1)),axis=1, where=A==1)
+  else:
+    deg = np.sum(clusters,axis=1)
+    wt_T = np.power(p,deg)
+    wt_C = np.power(1-p,deg)
+    zz = np.multiply(np.prod(A*z,axis=1),wt_T) - np.multiply(np.prod(A*(1-z),axis=1),wt_C)
+  return 1/n * y.dot(zz)
+
+#Hajek
+def est_hajek(n, p, y, A, z, clusters=np.array([])): 
+  if clusters.size == 0:
+    zz_T = np.prod(np.tile(z/p,(n,1)), axis=1, where=A==1)
+    zz_C = np.prod(np.tile((1-z)/(1-p),(n,1)), axis=1, where=A==1)
+  else:
+    deg = np.sum(clusters,axis=1)
+    wt_T = np.power(p,deg)
+    wt_C = np.power(1-p,deg)
+    zz_T = np.multiply(np.prod(A*z,axis=1),wt_T) 
+    zz_C = np.multiply(np.prod(A*(1-z),axis=1),wt_C)
+  all_ones = np.ones(n)
+  est_T = 0
+  est_C=0
+  if all_ones.dot(zz_T) > 0:
+    est_T = y.dot(zz_T) / all_ones.dot(zz_T)
+  if all_ones.dot(zz_C) > 0:
+    est_C = y.dot(zz_C) / all_ones.dot(zz_C)
+  return est_T - est_C
