@@ -58,7 +58,7 @@ def config_model(di):
 
     return A
 
-def config_model_nx(N, t = 50000, law = "out"):
+def config_model_nx(N, t = 50000, law = "out", unif = True):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
     model with power law degree sequences
@@ -69,14 +69,21 @@ def config_model_nx(N, t = 50000, law = "out"):
         "out" : out-degrees distributed as powerlaw, in-degrees sum up to same # as out-degrees
         "in" : in-degrees distributed as powerlaw, out-degrees sum up to same # as in-degrees
         "both" : both in- and out-degrees distributed as powerlaw
+    unif (bool): if True, constrains in or out-degrees to be uniform (depends on which law you pass)
     '''
     assert law in ["out", "in", "both"], "law must = 'out', 'in', or 'both'"
     if law == "out":
         deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_in = constrained_sum_sample_nonneg(N,np.sum(deg_seq_out))
+        if unif:
+            deg_seq_in = uniform_degrees(N,np.sum(deg_seq_out))
+        else:
+            deg_seq_in = constrained_sum_sample_nonneg(N,np.sum(deg_seq_out))
     elif law == "in":
         deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_out = constrained_sum_sample_nonneg(N,np.sum(deg_seq_in))
+        if unif:
+            deg_seq_out = uniform_degrees(N,np.sum(deg_seq_in))
+        else:
+            deg_seq_out = constrained_sum_sample_nonneg(N,np.sum(deg_seq_in))
     else:
         deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
         deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
@@ -89,6 +96,21 @@ def config_model_nx(N, t = 50000, law = "out"):
     np.fill_diagonal(A, 1)                    # everyone is affected by their own treatment
 
     return A
+
+def uniform_degrees(n,sum):
+    '''
+    Given n and sum, returns array whose entries add up to sum where each entry is in {sum/n, (sum,n)+1}
+    i.e. to create uniform degrees for a network that add up to a specific number
+
+    n: size of network
+    sum: number that the entries of the array must add up to
+    '''
+    degs = np.ones(n)*np.floor(sum/n)
+    i = 0
+    while np.sum(degs) != sum:
+        degs[i] += 1
+        i += 1
+    return degs
 
 def small_world(n,k,p):
     '''
