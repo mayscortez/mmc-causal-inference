@@ -21,10 +21,10 @@ import nci_polynomial_setup as ncps
 
 save_path = '/home/mayleencortez/datafiles/'
 
-n = 10000        # number of nodes in network
-diag_max = 6     # maximum norm of direct effect
-offdiag_max = 8  # maximum norm of indirect effect
-r = offdiag_max/diag_max
+n = 4000        # number of nodes in network
+diag = 6     # maximum norm of direct effect
+offdiag = 8  # maximum norm of indirect effect
+r = offdiag/diag
 
 T = 1000  # number of trials
 d = 1     # influence and malleability dimension size
@@ -38,13 +38,26 @@ graph = "con-outpwr"
 for p in p_treatments:
     print("Treatment Probability: {}\n".format(p))
 
-    # Generate (normalized) weights
-    C = ncls.weights_node_deg_unif(A, d)
-    C = C*A
-    C = ncls.normalized_weights(C, diag=diag_max, offdiag=offdiag_max)
-
     # baseline parameters
     alpha = np.random.rand(n)
+
+    #simplified model for generating the weights
+    C_diag = diag*np.random.rand(n)
+    C_offdiag = offdiag*np.random.rand(n)
+
+    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    C = np.dot(np.diag(in_deg), A - np.eye(n))
+    col_sum = np.sum(C,axis=0)
+    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
+    C = C / col_sum
+    C = np.dot(C, np.diag(C_offdiag))
+    np.fill_diagonal(C, C_diag)
+
+    # # Generate normalized weights
+    # C = ncls.weights_node_deg_unif(A)
+    # C = C*A
+    # C = ncls.normalized_weights(C, diag, offdiag)
 
     # potential outcomes model
     fy = lambda z: ncls.linear_pom(C,alpha,z)

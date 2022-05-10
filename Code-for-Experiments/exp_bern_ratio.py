@@ -23,8 +23,8 @@ save_path = '/home/mayleencortez/datafiles/'
 
 # Weights are node-degree-dependent & distributed according to a Uniform distribution
 
-n = 10000
-diagmax = 10   # maximum norm of direct effect
+n = 4000
+diag = 10   # maximum norm of direct effect
 
 p = 0.06    # treatment probability
 T = 1000    # number of trials
@@ -36,18 +36,32 @@ results = []
 A = ncls.config_model_nx(n,t=n*1000)
 graph = "con-outpwr"
 
-# null effects
-alpha = np.random.rand(n)
 
 ####### Experiments ########
 for r in ratio:
     print('ratio '+str(r))
-    offdiagmax = r*diagmax   # maximum norm of indirect effect
+    offdiag = r*diag   # maximum norm of indirect effect
 
-    # normalized weights
-    C = ncls.weights_node_deg_unif(A)
-    C = C*A
-    C = ncls.normalized_weights(C, diag=diagmax, offdiag=offdiagmax)
+    # null effects
+    alpha = np.random.rand(n)
+
+    #simplified model for generating the weights
+    C_diag = diag*np.random.rand(n)
+    C_offdiag = offdiag*np.random.rand(n)
+
+    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    C = np.dot(np.diag(in_deg), A - np.eye(n))
+    col_sum = np.sum(C,axis=0)
+    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
+    C = C / col_sum
+    C = np.dot(C, np.diag(C_offdiag))
+    np.fill_diagonal(C, C_diag)
+
+    # # Generate normalized weights
+    # C = ncls.weights_node_deg_unif(A)
+    # C = C*A
+    # C = ncls.normalized_weights(C, diag, offdiag)
 
     # Potential Outcomes Model
     fy = lambda z: ncls.linear_pom(C,alpha,z)

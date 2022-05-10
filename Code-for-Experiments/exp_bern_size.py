@@ -13,13 +13,13 @@ import pandas as pd
 import seaborn as sns
 import sys
 
-path_to_module = '/home/mayleencortez/mmc-causal-inference/Code-for-Experiments'
+path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = '/home/mayleencortez/datafiles/'
+save_path = 'ouputFiles/'
 
 # Run Experiment
 T = 1000        # number of trials
@@ -38,13 +38,26 @@ for n in sizes:
     A = ncls.config_model_nx(n,t=n*1000)
     graph = "con-outpwr"
 
-    # Generate normalized weights
-    C = ncls.weights_node_deg_unif(A)
-    C = C*A
-    C = ncls.normalized_weights(C, diag, offdiag)
-
     # null effects
     alpha = np.random.rand(n)
+
+    #simplified model for generating the weights
+    C_diag = diag*np.random.rand(n)
+    C_offdiag = offdiag*np.random.rand(n)
+
+    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
+    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
+    C = np.dot(np.diag(in_deg), A - np.eye(n))
+    col_sum = np.sum(C,axis=0)
+    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
+    C = C / col_sum
+    C = np.dot(C, np.diag(C_offdiag))
+    np.fill_diagonal(C, C_diag)
+
+    # # Generate normalized weights
+    # C = ncls.weights_node_deg_unif(A)
+    # C = C*A
+    # C = ncls.normalized_weights(C, diag, offdiag)
 
     # potential outcomes model
     fy = lambda z: ncls.linear_pom(C,alpha,z)

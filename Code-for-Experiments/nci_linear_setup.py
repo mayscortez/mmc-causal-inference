@@ -469,6 +469,7 @@ def loadWeights(filename,n):
     next(f)
     alpha = np.zeros(n)
     for i in range(n):
+        line = next(f)
         line = line.strip()
         alpha[i] = float(line)
     next(f)

@@ -10,7 +10,7 @@ offdiagmax = r*diagmax   # maximum norm of indirect effect
 p = 0.5    # treatment probability
 T = 1000   # number of trials
 
-sizes = np.array([16,24,32,48,64,96])#
+sizes = np.array([16,24])#,32,48,64,96])#
 results = []
 
 for s in sizes:
@@ -20,7 +20,7 @@ for s in sizes:
   graph = "sw"
 
   # baseline parameters
-  alpha = np.zeros(n)
+  alpha = np.random.rand(n)
 
   # Generate (normalized) weights
   C = weights_node_deg_unif(A)
@@ -28,8 +28,8 @@ for s in sizes:
   C = normalized_weights(C, diag=diagmax, offdiag=offdiagmax)
 
   # print/load weights
-  printWeights(C,alpha,'graphs/SW'+str(s)+'.txt')
-  (C,alpha) = loadWeights('graphs/SW'+str(s)+'.txt',n)
+  printWeights(C,alpha,'graphs/SW'+str(s)+'_weights.txt')
+  (C,alpha) = loadWeights('graphs/SW'+str(s)+'_weights.txt',n)
 
   # Potential Outcomes Model
   fy = lambda z: linear_pom(C,alpha,z)
