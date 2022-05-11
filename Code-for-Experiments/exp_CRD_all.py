@@ -11,6 +11,7 @@ from math import log, ceil
 import pandas as pd
 import seaborn as sns
 import sys
+import time
 
 path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
 
@@ -24,7 +25,7 @@ save_path = 'mmc-causal-inference/outputFiles/'
 ###########################################
 # Run Experiment: Varying Size of Network
 ###########################################
-
+startTime = time.time()
 T = 1000        # number of trials
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
@@ -33,7 +34,7 @@ p = 0.05        # treatment probability
 
 results = []
 
-sizes = np.array([500, 1000, 2000, 4000, 8000, 12000, 16000, 20000, 24000, 28000])
+sizes = np.array([500, 1000, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
 for n in sizes:
     print(n)
 
@@ -229,6 +230,8 @@ for r in ratio:
         results.append({'Estimator': 'OLS-Num-C', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE})
         results.append({'Estimator': 'Diff-Means-Stnd-C', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_naive[i]-TTE)/TTE})
         results.append({'Estimator': 'Diff-Means-Frac-C', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_fraction[i]-TTE)/TTE})
-        
+
+executionTime = (time.time() - startTime)
+print('Runtime in seconds: {}'.format(executionTime))        
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-ratio-CRD-linear-full-data.csv')
