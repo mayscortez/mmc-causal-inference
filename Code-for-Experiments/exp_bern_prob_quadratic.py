@@ -38,6 +38,8 @@ graph = "con-outpwr"
 
 for p in p_treatments:
     print("Treatment Probability: {}\n".format(p))
+    P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
+    H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
 
     for g in range(G):
         graph_rep = str(p) + '-' + str(g)
@@ -69,7 +71,7 @@ for p in p_treatments:
         TTE_gasr, TTE_pol1, TTE_pol2, TTE_linpoly, TTE_linspl, TTE_quadspl = np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)
 
         for i in range(T):
-            Z, H, P = ncps.staggered_rollout_bern(beta, p, n)
+            Z = ncps.staggered_rollout_bern(beta, n, P)
             y = fy(Z[beta,:])
             sums = ncps.outcome_sums(beta, fy, Z)
             TTE_gasr[i] = ncps.graph_agnostic(n, sums, H)

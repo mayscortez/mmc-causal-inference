@@ -31,6 +31,8 @@ p = 0.50        # treatment probability
 G = 25          # number of graphs per value of r
 T = 25          # number of trials per graph
 
+P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
+H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
 graph = "con-outpwr"
@@ -72,7 +74,7 @@ for r in ratio:
         TTE_gasr, TTE_pol1, TTE_pol2, TTE_linpoly, TTE_linspl, TTE_quadspl = np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)
 
         for i in range(T):
-            Z, H, P = ncps.staggered_rollout_bern(beta, p, n)
+            Z = ncps.staggered_rollout_bern(beta, n, P)
             y = fy(Z[beta,:])
             sums = ncps.outcome_sums(beta, fy, Z)
             TTE_gasr[i] = ncps.graph_agnostic(n, sums, H)
