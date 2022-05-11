@@ -87,7 +87,19 @@ def seq_treatment_probs(beta, p):
   P = np.fromfunction(fun, shape=(beta+1,))
   return P
 
-def staggered_rollout_complete(beta, p, n, K=np.array([])):
+def seq_treated(beta, n):
+  '''
+  Returns number of people treated by each time step with K = [k0, k1, ... , kbeta] via ki = i*n*p/beta
+  
+  beta (int): degree of potential outcomes model
+  n (int): size of population
+  '''
+  if K.size == 0:
+    fun = lambda i: np.floor((i/beta)*np.floor(p*n)).astype(int)
+    K = np.fromfunction(fun, shape=(beta+1,))
+  return K
+
+def staggered_rollout_complete(beta, p, n, K):
   '''
   Returns Treatment Samples Z from Complete Staggered Rollout and number of people treated by each time step K
 
@@ -96,10 +108,6 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
   n (int): size of population
   K (numpy array): total number of individuals treated by each timestep
   '''
-  ### Compute K = [k0, k1, ... , kbeta] via ki = i*n*p/beta ###
-  if K.size == 0:
-    fun = lambda i: np.floor((i/beta)*np.floor(p*n)).astype(int)
-    K = np.fromfunction(fun, shape=(beta+1,))
 
   ### Initialize ###
   Z = np.zeros(shape=(beta+1,n))   # for each treatment sample, z_t
@@ -116,13 +124,14 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
     # Get new indices of the nontreated individuals
     indices = np.where(Z[t+1,:]==0)[0]
 
-  return Z, K
+  return Z
 
-def complete_coeffs(beta, K):
+def complete_coeffs(beta, n, K):
   '''
   Returns coefficients l_t from Complete Staggered Rollout
 
   beta (int): degree of potential outcomes model
+  n (int): size of population
   K (numpy array): total number of individuals treated by each timestep
   '''
 
