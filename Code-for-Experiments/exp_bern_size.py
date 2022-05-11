@@ -34,7 +34,7 @@ graph = "con-outpwr"
 
 results = []
 
-sizes = np.array([500, 1000, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
+sizes = np.array([500, 1000, 2000, 4000, 6000, 8000, 10000, 12000])
 for n in sizes:
     print(n)
 
@@ -81,7 +81,7 @@ for n in sizes:
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
 
             results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
+            #results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'Graph-Agnostic-VR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_reduction[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':graph_rep})

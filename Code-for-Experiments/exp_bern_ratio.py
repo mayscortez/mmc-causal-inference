@@ -24,11 +24,11 @@ save_path = 'mmc-causal-inference/outputFiles/'
 
 startTime = time.time()
 # Run Experiment
-n = 4000
+n = 5000
 diag = 10   # maximum norm of direct effect
 p = 0.06    # treatment probability
-G = 25      # number of graphs per value of r
-T = 25      # number of trials per graph
+G = 50     # number of graphs per value of r
+T = 50      # number of trials per graph
 
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
@@ -83,7 +83,7 @@ for r in ratio:
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,tol=0.2)
 
             results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
+            #results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'Graph-Agnostic-VR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_reduction[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':graph_rep})

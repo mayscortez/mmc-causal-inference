@@ -24,12 +24,12 @@ save_path = 'mmc-causal-inference/outputFiles/'
 
 startTime = time.time()
 # Run Experiment
-n = 4000        # number of nodes in network
+n = 5000        # number of nodes in network
 diag = 6        # maximum norm of direct effect
 offdiag = 8     # maximum norm of indirect effect
 r = offdiag/diag
-G = 25      # number of graphs per value of p
-T = 25      # number of trials per graph
+G = 50      # number of graphs per value of p
+T = 50      # number of trials per graph
 
 p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
 results = []
@@ -83,7 +83,7 @@ for p in p_treatments:
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,tol=0.2)
 
             results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
+            #results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'Graph-Agnostic-VR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_reduction[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols[i]-TTE)/TTE, 'Graph':graph_rep})
             results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':graph_rep})

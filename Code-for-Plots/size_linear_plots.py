@@ -32,7 +32,7 @@ plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(['Graph-Agnostic','Graph-Aware','Graph-Agnostic-VR'])], ci='sd', legend='brief', markers=True)
+sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(['Graph-Agnostic','Graph-Agnostic-VR'])], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Size of Population (n)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of Estimators', fontsize=16)
