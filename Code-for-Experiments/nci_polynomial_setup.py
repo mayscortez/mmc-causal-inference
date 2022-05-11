@@ -33,22 +33,16 @@ def ppom(f, C, alpha):
   g = lambda z : C.dot(z)/np.sum(C,1)
   return lambda z: f(alpha, C.dot(z), g(z)) 
 
-def staggered_rollout_bern(beta, p, n, P=np.array([])):
+def staggered_rollout_bern(beta, n, P):
   '''
-  Returns Treatment Samples and Coefficients h_t from Bernoulli Staggered Rollout
+  Returns Treatment Samples from Bernoulli Staggered Rollout
 
   beta (int): degree of potential outcomes model
-  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
   n (int): size of population
   P (numpy array): treatment probabilities for each time step
   '''
-  ### Compute P = [p0, p1, ... , pbeta] via pi = (i+1)p/(beta+1) ###
-  if P.size == 0:
-    fun = lambda i: (i)*p/(beta)
-    P = np.fromfunction(fun, shape=(beta+1,))
 
   ### Initialize ###
-  H = np.zeros(beta+1)   # for the coefficients h_t
   Z = np.zeros(shape=(beta+1,n))   # for each treatment sample z_t
   U = np.random.rand(n)
 
@@ -57,7 +51,21 @@ def staggered_rollout_bern(beta, p, n, P=np.array([])):
     ## sample treatment vector ##
     Z[t,:] = (U < P[t])+0
 
-    ## computing h_t ##
+  return Z
+
+def bern_coeffs(beta, P):
+  '''
+  Returns Coefficients h_t from Bernoulli Staggered Rollout
+
+  beta (int): degree of potential outcomes model
+  P (numpy array): treatment probabilities for each time step
+  '''
+
+  ### Initialize ###
+  H = np.zeros(beta+1)
+
+  ### Coefficients ###
+  for t in range(beta+1):
     one_minusP = 1 - P            # [1-p0, 1-p1, ... , 1-p_beta]
     pt_minusP = P[t] - P          # [pt-p0, pt-p1, ... , pt-p_beta]
     minusP = -1*P                 # [-p0, -p1, ... , -p_beta]
@@ -66,11 +74,22 @@ def staggered_rollout_bern(beta, p, n, P=np.array([])):
     fraction2 = minusP/pt_minusP
     H[t] = np.prod(fraction1) - np.prod(fraction2)
 
-  return Z, H, P
+  return H
+
+def seq_treatment_probs(beta, p):
+  '''
+  Returns sequence of treatment probabilities for Bernoulli staggered rollout
+
+  beta (int): degree of PPOM
+  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
+  '''
+  fun = lambda i: (i)*p/(beta)
+  P = np.fromfunction(fun, shape=(beta+1,))
+  return P
 
 def staggered_rollout_complete(beta, p, n, K=np.array([])):
   '''
-  Returns Treatment Samples and Coefficients l_t from Complete Staggered Rollout
+  Returns Treatment Samples Z from Complete Staggered Rollout and number of people treated by each time step K
 
   beta (int): degree of potential outcomes model
   p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
@@ -83,7 +102,6 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
     K = np.fromfunction(fun, shape=(beta+1,))
 
   ### Initialize ###
-  L = np.zeros(beta+1)             # for the coefficients L_t
   Z = np.zeros(shape=(beta+1,n))   # for each treatment sample, z_t
   indices = np.arange(n)           # right now no one is treated
   rng = np.random.default_rng()    # random generator
@@ -95,7 +113,23 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
     to_treat = rng.choice(indices, K[t+1]-K[t], replace=False)
     Z[t+1:,to_treat] = 1 
 
-    ## computing l_t for t=0 to t=beta##
+    # Get new indices of the nontreated individuals
+    indices = np.where(Z[t+1,:]==0)[0]
+
+  return Z, K
+
+def complete_coeffs(beta, K):
+  '''
+  Returns coefficients l_t from Complete Staggered Rollout
+
+  beta (int): degree of potential outcomes model
+  K (numpy array): total number of individuals treated by each timestep
+  '''
+
+  ### Initialize ###
+  L = np.zeros(beta+1)             # for the coefficients L_t
+
+  for t in range(beta+1):
     n_minusK = n - K            # [n-k0, n-k1, ... , n-k_beta]
     kt_minusK = K[t] - K        # [kt-k0, kt-k1, ... , kt-k_beta]
     minusK = -1*K               # [-k0, -k1, ... , -k_beta]
@@ -104,18 +138,7 @@ def staggered_rollout_complete(beta, p, n, K=np.array([])):
     fraction2 = minusK/kt_minusK
     L[t] = np.prod(fraction1) - np.prod(fraction2)
 
-    # Get new indices of the nontreated individuals
-    indices = np.where(Z[t+1,:]==0)[0]
-
-  ## computing l_t for t = beta+1##
-  n_minusK = n - K            # [n-k0, n-k1, ... , n-k_beta]
-  kt_minusK = K[beta] - K        # [kt-k0, kt-k1, ... , kt-k_beta]
-  minusK = -1*K               # [-k0, -k1, ... , -k_beta]
-  n_minusK[beta] = 1; kt_minusK[beta] = 1; minusK[beta] = 1
-  fraction1 = n_minusK/kt_minusK
-  fraction2 = minusK/kt_minusK
-  L[beta] = np.prod(fraction1) - np.prod(fraction2)
-  return Z, L, K
+  return L
 
 def outcome_sums(beta, Y, Z):
   '''
