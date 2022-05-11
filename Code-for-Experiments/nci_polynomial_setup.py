@@ -87,11 +87,12 @@ def seq_treatment_probs(beta, p):
   P = np.fromfunction(fun, shape=(beta+1,))
   return P
 
-def seq_treated(beta, n):
+def seq_treated(beta, p, n):
   '''
   Returns number of people treated by each time step with K = [k0, k1, ... , kbeta] via ki = i*n*p/beta
   
   beta (int): degree of potential outcomes model
+  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
   n (int): size of population
   '''
   if K.size == 0:
@@ -99,12 +100,11 @@ def seq_treated(beta, n):
     K = np.fromfunction(fun, shape=(beta+1,))
   return K
 
-def staggered_rollout_complete(beta, p, n, K):
+def staggered_rollout_complete(beta, n, K):
   '''
   Returns Treatment Samples Z from Complete Staggered Rollout and number of people treated by each time step K
 
   beta (int): degree of potential outcomes model
-  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
   n (int): size of population
   K (numpy array): total number of individuals treated by each timestep
   '''
