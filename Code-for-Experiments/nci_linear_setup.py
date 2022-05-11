@@ -486,7 +486,7 @@ def normalized_weights(C, diag=10, offdiag=8):
     # remove diagonal elements and normalize off-diagonal elements
     # normalizes each column by the norm of the column (not including the diagonal element)
     np.fill_diagonal(C, 0)
-    col_norms = np.linalg.norm(C, axis=0)
+    col_norms = np.linalg.norm(C, axis=0, ord=1)
     col_norms = np.where(col_norms != 0, col_norms, col_norms+1)
     C = (C / col_norms) * offdiag * np.random.rand(n)
 
