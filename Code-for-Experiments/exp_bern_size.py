@@ -21,16 +21,18 @@ import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
 save_path = 'mmc-causal-inference/outputFiles/'
+save_path_graphs = 'mmc-causal-inference/outputFiles/Graphs/'
 
 startTime = time.time()
 # Run Experiment
-G = 25          # number of graphs we want to average over
-T = 25          # number of trials per graph
+G = 50          # number of graphs we want to average over
+T = 50          # number of trials per graph
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
 p = 0.05        # treatment probability
-graph = "con-outpwr"
+graph = "config"
+experiment = "-size-bern-lin-" # vary size; bernoulli RD; linear model
 
 results = []
 
@@ -44,11 +46,19 @@ for n in sizes:
         # Generate random adjacency matrix
         A = ncls.config_model_nx(n,t=n*1000)
 
+        # Save graph
+        name = save_path_graphs + graph + experiment + graph_rep + '-A'
+        ncls.printGraph(A, name, symmetric=False)
+
         # null effects
         alpha = np.random.rand(n)
 
         # weights from simple model
         C = ncls.simpleWeights(A, diag, offdiag)
+
+        # Save weights
+        name = save_path_graphs + graph + graph_rep + '-C'
+        ncls.printWeights(C, alpha, name)
 
         # # Generate normalized weights
         # C = ncls.weights_node_deg_unif(A)
