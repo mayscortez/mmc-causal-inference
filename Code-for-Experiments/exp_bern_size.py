@@ -25,45 +25,34 @@ save_path_graphs = 'mmc-causal-inference/outputFiles/Graphs/'
 
 startTime = time.time()
 # Run Experiment
-G = 50          # number of graphs we want to average over
-T = 50          # number of trials per graph
+G = 10          # number of graphs we want to average over
+T = 20          # number of trials per graph
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
 p = 0.05        # treatment probability
 graph = "config"
-experiment = "-size-bern-lin-" # vary size; bernoulli RD; linear model
+#experiment = "-size-bern-lin-" # vary size; bernoulli RD; linear model
 
 results = []
 
-sizes = np.array([500, 1000, 2000, 4000, 6000, 8000, 10000, 12000])
+sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
 for n in sizes:
-    print(n)
+    print("n = {}".format(n))
 
+    startTime2 = time.time()
     for g in range(G):
-        graph_rep = str(n) + '-' + str(g)
+        if g % 5 == 0:
+            print("Graph #{}".format(g))
+        graph_rep = str(g)
+        sz = str(n) + '-'
         
         # Generate random adjacency matrix
         A = ncls.config_model_nx(n,t=n*1000)
 
-        # Save graph
-        name = save_path_graphs + graph + experiment + graph_rep + '-A'
-        ncls.printGraph(A, name, symmetric=False)
-
-        # null effects
-        alpha = np.random.rand(n)
-
-        # weights from simple model
-        C = ncls.simpleWeights(A, diag, offdiag)
-
-        # Save weights
-        name = save_path_graphs + graph + graph_rep + '-C'
-        ncls.printWeights(C, alpha, name)
-
-        # # Generate normalized weights
-        # C = ncls.weights_node_deg_unif(A)
-        # C = C*A
-        # C = ncls.normalized_weights(C, diag, offdiag)
+        # load weighted graph
+        name = save_path_graphs + graph + sz + graph_rep + '-C'
+        C,alpha = ncls.loadGraph(name, n)
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
@@ -90,15 +79,17 @@ for n in sizes:
             TTE_diff_means_naive[i] = ncls.diff_in_means_naive(y,z)
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
 
-            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':graph_rep})
+            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':sz+graph_rep})
             #results.append({'Estimator': 'Graph-Aware', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_aware[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Graph-Agnostic-VR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_reduction[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'OLS-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Diff-Means-Stnd', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_naive[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Diff-Means-Frac', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_fraction[i]-TTE)/TTE, 'Graph':graph_rep})
+            results.append({'Estimator': 'Graph-Agnostic-VR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_reduction[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'OLS-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Diff-Means-Stnd', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_naive[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Diff-Means-Frac', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_fraction[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+    executionTime2 = (time.time() - startTime2)
+    print('Runtime (in seconds) for n = {} step: {}'.format(n,executionTime2))
 
 executionTime = (time.time() - startTime)
-print('Runtime in seconds: {}'.format(executionTime))
+print('Runtime of entire script in minutes: {}'.format(executionTime/60))
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-size-bern-linear-full-data.csv')
