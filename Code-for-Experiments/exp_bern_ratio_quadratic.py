@@ -21,47 +21,51 @@ import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
 save_path = 'mmc-causal-inference/outputFiles/'
+save_path_graphs = 'mmc-causal-inference/graphs/'
 
 startTime = time.time()
 # Run Experiment
-n = 20000       # number of nodes in network
+n = 21000       # number of nodes in network
+sz = str(n) + '-'
 diag = 10       # maximum norm of direct effect
 beta = 2        # degree of outcomes model
 p = 0.50        # treatment probability
-G = 25          # number of graphs per value of r
-T = 25          # number of trials per graph
+G = 2          # number of graphs per value of r
+T = 10          # number of trials per graph
 
 P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
 H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
-graph = "con-outpwr"
+graph = "CON"
 
 # baseline parameters
 alpha = np.random.rand(n)
 
 for r in ratio:
-    print('ratio '+str(r))
+    print('ratio: {}'.format(r))
     offdiag = r*diag   # maximum norm of indirect effect
+    rat = str(r) + '-'
+    startTime2 = time.time()
 
     for g in range(G):
-        graph_rep = str(r) + '-' + str(g)
+        if g % 5 == 0:
+            print("Graph #{}".format(g))
+        graph_rep = str(g)
 
-        # Generate Network
-        A = ncls.config_model_nx(n, t = n*1000, law = "out")
-
-        # baseline parameters
+        # load graph
+        name = save_path_graphs + graph + sz + graph_rep + '-A'
+        A = ncls.loadGraph(name, symmetric=False)
+        
+        # null effects
         alpha = np.random.rand(n)
 
         # weights from simple model
         C = ncls.simpleWeights(A, diag, offdiag)
 
-        '''
-        # Generate (normalized) weights
-        C = ncls.weights_node_deg_unif(A)
-        C = C*A
-        C = ncls.normalized_weights(C, diag, offdiag)
-        '''
+        # Save weights
+        name = save_path_graphs + graph + sz + rat + graph_rep + '-C'
+        ncls.printWeights(C, alpha, name)
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
@@ -83,14 +87,16 @@ for r in ratio:
             TTE_linpoly[i], TTE_linspl[i] = ncps.poly_interp_linear(n, P, sums)
             TTE_quadspl[i] = ncps.poly_interp_splines(n, P, sums, 'quadratic')
 
-            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl[i]-TTE)/TTE, 'Graph':graph_rep})
-            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl[i]-TTE)/TTE, 'Graph':graph_rep})
+            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+    executionTime2 = (time.time() - startTime2)
+    print('Runtime (in seconds) for r = {} step: {}'.format(r,executionTime2))
 
 executionTime = (time.time() - startTime)
-print('Runtime in seconds: {}'.format(executionTime))      
+print('Runtime of entire script in minutes: {}'.format(executionTime/60))    
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-ratio-bern-quadratic-full-data.csv')  

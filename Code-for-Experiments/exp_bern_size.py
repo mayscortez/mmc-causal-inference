@@ -25,13 +25,13 @@ save_path_graphs = 'mmc-causal-inference/graphs/'
 
 startTime = time.time()
 # Run Experiment
-G = 2          # number of graphs we want to average over
-T = 20          # number of trials per graph
+G = 1          # number of graphs we want to average over
+T = 1          # number of trials per graph
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
 p = 0.05        # treatment probability
-graph = "config"
+graph = "CON"   # configuration model
 #experiment = "-size-bern-lin-" # vary size; bernoulli RD; linear model
 
 results = []
@@ -50,6 +50,7 @@ for n in sizes:
         # load weighted graph
         name = save_path_graphs + graph + sz + graph_rep + '-C'
         C,alpha = ncls.loadGraph(name, n)
+        A = (C > 0) + 0
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)

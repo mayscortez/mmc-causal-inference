@@ -34,7 +34,7 @@ T = 20      # number of trials per graph
 
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
-graph = "config"
+graph = "CON"
 #experiment = "-ratio-bern-lin-" # vary raito; bernoulli RD; linear model
 
 ####### Experiments ########
@@ -60,7 +60,7 @@ for r in ratio:
         C = ncls.simpleWeights(A, diag, offdiag)
 
         # Save weights
-        name = save_path_graphs + graph + sz + '-' + rat + graph_rep + '-C'
+        name = save_path_graphs + graph + sz + rat + graph_rep + '-C'
         ncls.printWeights(C, alpha, name)
 
         ## Potential Outcomes Model ##

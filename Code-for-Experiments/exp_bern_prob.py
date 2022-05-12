@@ -35,7 +35,7 @@ T = 20      # number of trials per graph
 
 p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
 results = []
-graph = "config"
+graph = "CON"
 
 for p in p_treatments:
     print("Treatment Probability: {}\n".format(p))
@@ -50,6 +50,8 @@ for p in p_treatments:
         # load weighted graph
         name = save_path_graphs + graph + sz + graph_rep + '-C'
         C,alpha = ncls.loadGraph(name, n)
+
+        A = (C > 0) + 0 # adjacency matrix
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
