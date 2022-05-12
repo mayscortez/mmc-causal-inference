@@ -24,7 +24,7 @@ startTime = time.time()
 G = 1               # number of graphs we want to average over
 diag = 6            # controls magnitude of direct effects
 offdiag = 8         # controls magnitude of indirect effects
-r = offdiag/diag    # ration btw indirect & direct effects
+r = offdiag/diag    # ratio btw indirect & direct effects
 graph = "CON"       # configuration model
 # graph = "ER"     # Erdos Renyi
 
