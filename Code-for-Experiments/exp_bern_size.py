@@ -21,11 +21,11 @@ import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
 save_path = 'mmc-causal-inference/outputFiles/'
-save_path_graphs = 'mmc-causal-inference/outputFiles/Graphs/'
+save_path_graphs = 'mmc-causal-inference/graphs/'
 
 startTime = time.time()
 # Run Experiment
-G = 10          # number of graphs we want to average over
+G = 2          # number of graphs we want to average over
 T = 20          # number of trials per graph
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
@@ -39,16 +39,13 @@ results = []
 sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
 for n in sizes:
     print("n = {}".format(n))
-
     startTime2 = time.time()
+    
     for g in range(G):
         if g % 5 == 0:
             print("Graph #{}".format(g))
         graph_rep = str(g)
         sz = str(n) + '-'
-        
-        # Generate random adjacency matrix
-        A = ncls.config_model_nx(n,t=n*1000)
 
         # load weighted graph
         name = save_path_graphs + graph + sz + graph_rep + '-C'
