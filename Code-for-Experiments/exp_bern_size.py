@@ -39,13 +39,13 @@ results = []
 sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
 for n in sizes:
     print("n = {}".format(n))
+    sz = str(n) + '-'
     startTime2 = time.time()
     
     for g in range(G):
         if g % 5 == 0:
             print("Graph #{}".format(g))
         graph_rep = str(g)
-        sz = str(n) + '-'
 
         # load weighted graph
         name = save_path_graphs + graph + sz + graph_rep + '-C'

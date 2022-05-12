@@ -26,27 +26,31 @@ save_path_graphs = 'mmc-causal-inference/graphs/'
 startTime = time.time()
 # Run Experiment
 n = 5000
-sz = str(n)
+sz = str(n) + '-'
 diag = 10   # maximum norm of direct effect
 p = 0.06    # treatment probability
-G = 50     # number of graphs per value of r
-T = 50      # number of trials per graph
+G = 2     # number of graphs per value of r
+T = 20      # number of trials per graph
 
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
 graph = "config"
-experiment = "-ratio-bern-lin-" # vary raito; bernoulli RD; linear model
+#experiment = "-ratio-bern-lin-" # vary raito; bernoulli RD; linear model
 
 ####### Experiments ########
 for r in ratio:
-    print('ratio: '+str(r))
+    print('ratio: {}'.format(r))
     offdiag = r*diag   # maximum norm of indirect effect
     rat = str(r) + '-'
+    startTime2 = time.time()
+
     for g in range(G):
+        if g % 5 == 0:
+            print("Graph #{}".format(g))
         graph_rep = str(g)
 
         # load graph
-        name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
+        name = save_path_graphs + graph + sz + graph_rep + '-A'
         A = ncls.loadGraph(name, symmetric=False)
         
         # null effects
@@ -59,12 +63,6 @@ for r in ratio:
         name = save_path_graphs + graph + sz + '-' + rat + graph_rep + '-C'
         ncls.printWeights(C, alpha, name)
 
-        '''
-        # Generate normalized weights
-        C = ncls.weights_node_deg_unif(A)
-        C = C*A
-        C = ncls.normalized_weights(C, diag, offdiag)
-        '''
         ## Potential Outcomes Model ##
         fy = lambda z: ncls.linear_pom(C,alpha,z)
 
@@ -97,8 +95,10 @@ for r in ratio:
             results.append({'Estimator': 'OLS-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_ols2[i]-TTE)/TTE, 'Graph':rat+graph_rep})
             results.append({'Estimator': 'Diff-Means-Stnd', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_naive[i]-TTE)/TTE, 'Graph':rat+graph_rep})
             results.append({'Estimator': 'Diff-Means-Frac', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_diff_means_fraction[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+    executionTime2 = (time.time() - startTime2)
+    print('Runtime (in seconds) for r = {} step: {}'.format(r,executionTime2))
 
 executionTime = (time.time() - startTime)
-print('Runtime in seconds: {}'.format(executionTime))
+print('Runtime of entire script in minutes: {}'.format(executionTime/60))
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-ratio-bern-linear-full-data.csv')
