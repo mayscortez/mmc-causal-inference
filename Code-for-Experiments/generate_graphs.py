@@ -48,6 +48,11 @@ for n in sizes:
         # weights from simple model
         C = ncls.simpleWeights(A, diag, offdiag)
 
+        # # Generate normalized weights
+        # C = ncls.weights_node_deg_unif(A)
+        # C = C*A
+        # C = ncls.normalized_weights(C, diag, offdiag)
+
         # Save weights
         name = save_path_graphs + graph + sz + '-' + graph_rep + '-C'
         ncls.printWeights(C, alpha, name)
