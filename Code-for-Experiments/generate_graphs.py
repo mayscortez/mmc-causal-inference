@@ -33,13 +33,13 @@ for n in sizes:
     print(n)
 
     for g in range(G):
-        graph_rep = str(n) + '-' + str(g)
-        
+        graph_rep = str(g)
+        sz = str(n)
         # Generate Network
         A = ncls.config_model_nx(n,t=n*1000)
 
         # save graph
-        name = save_path_graphs + graph + graph_rep + '-A'
+        name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
         ncls.printGraph(A, name, symmetric=False)
         
         # null effects
@@ -49,7 +49,7 @@ for n in sizes:
         C = ncls.simpleWeights(A, diag, offdiag)
 
         # Save weights
-        name = save_path_graphs + graph + graph_rep + '-C'
+        name = save_path_graphs + graph + sz + '-' + graph_rep + '-C'
         ncls.printWeights(C, alpha, name)
 
 executionTime = (time.time() - startTime)
