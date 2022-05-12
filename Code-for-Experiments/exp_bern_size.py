@@ -75,7 +75,7 @@ for n in sizes:
             TTE_ols[i] = ncls.est_ols_gen(y,A,z)
             TTE_ols2[i] = ncls.est_ols_treated(y,A,z)
             TTE_gasr[i] = 1/(p*n) * np.sum(y_diff)
-            TTE_aware[i] = sum([y_diff[i] * degs[i]/treated_degs[i] * 1/(1-(1-p)**degs[i]) for i in range(n) if treated_degs[i] > 0]) * 1/n
+            #TTE_aware[i] = sum([y_diff[i] * degs[i]/treated_degs[i] * 1/(1-(1-p)**degs[i]) for i in range(n) if treated_degs[i] > 0]) * 1/n
             TTE_reduction[i] = 1/(1-(1-p)**n) * np.sum(y_diff)/np.sum(z)
             TTE_diff_means_naive[i] = ncls.diff_in_means_naive(y,z)
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
