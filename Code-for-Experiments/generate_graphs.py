@@ -30,8 +30,7 @@ r = offdiag/diag    # ratio btw indirect & direct effects
 graph = "CON"       # configuration model
 # graph = "ER"     # Erdos Renyi
 
-#1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 
-sizes = np.array([31000, 33000, 35000, 38000])
+sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000])
 for n in sizes:
     print(n)
 
@@ -39,7 +38,7 @@ for n in sizes:
         graph_rep = str(g)
         sz = str(n)
         # Generate Network
-        A = ncls.config_model_nx(n,t=n*1000)
+        A = ncls.config_model_nx(n)
 
         # save graph
         name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
