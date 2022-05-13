@@ -41,7 +41,7 @@ def main():
     sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
 
     for n in sizes:
-        print("n = {}".format(n))
+        # print("n = {}".format(n))
         startTime2 = time.time()
 
         results.extend(run_experiment(G,T,n,p,r,graphStr,diag))
@@ -67,7 +67,7 @@ def main():
     p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
 
     for p in p_treatments:
-        print("Treatment Probability: {}\n".format(p))
+        # print("Treatment Probability: {}".format(p))
         startTime3 = time.time()
 
         results.extend(run_experiment(G,T,n,p,r,graphStr,diag))
@@ -91,7 +91,7 @@ def main():
     ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 
     for r in ratio:
-        print('ratio: {}'.format(r))
+        # print('ratio: {}'.format(r))
         startTime3 = time.time()
 
         results.extend(run_experiment(G,T,n,p,r,graphStr,diag))
@@ -118,8 +118,6 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
     sz = str(n) + '-'
     for g in range(G):
-        if g % 5 == 0:
-            print("Graph #{}".format(g))
         graph_rep = str(g)
         dict_base.update({'Graph':sz+graph_rep})
 
