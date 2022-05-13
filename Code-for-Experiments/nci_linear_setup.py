@@ -559,7 +559,7 @@ linear_pom = lambda C,alpha, z : C.dot(z) + alpha
 
 bernoulli = lambda n,p : (np.random.rand(n) < p) + 0
 
-def completeRD(n,p):
+def completeRD(n,treat):
     '''
     Returns a treatment vector using complete randomized design
 
@@ -567,7 +567,6 @@ def completeRD(n,p):
     p (float): fraction of individuals you want to be assigned to treatment
     '''
     z = np.zeros(shape=(n,))
-    treat = np.floor(p*n).astype(int)
     z[0:treat] = np.ones(shape=(treat))
     rng = np.random.default_rng()
     rng.shuffle(z)

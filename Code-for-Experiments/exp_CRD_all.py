@@ -73,7 +73,7 @@ for n in sizes:
         l1 = n/pn
 
         for i in range(T):
-            z = ncls.completeRD(n,p)
+            z = ncls.completeRD(n,int(pn))
             y = fy(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
@@ -156,7 +156,7 @@ for p in p_treatments:
         l1 = n/pn
 
         for i in range(T):
-            z = ncls.completeRD(n,p)
+            z = ncls.completeRD(n,int(pn))
             y = fy(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
@@ -240,7 +240,7 @@ for r in ratio:
         TTE_ols, TTE_ols2, TTE_gasr, TTE_aware, TTE_reduction, TTE_diff_means_naive, TTE_diff_means_fraction = np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)
 
         for i in range(T):
-            z = ncls.completeRD(n,p)
+            z = ncls.completeRD(n,int(pn))
             y = fy(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
