@@ -22,9 +22,11 @@ save_path = 'outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 1          # number of graphs we want to average over
-    T = 1          # number of trials per graph
+    G = 10          # number of graphs we want to average over
+    T = 100          # number of trials per graph
     graphStr = "CON"   # configuration model
+
+    sys.stdout = open(save_path+'experiments_output.txt', 'w')
 
     ###########################################
     # Run Experiment: Varying Size of Network
@@ -105,7 +107,9 @@ def main():
     executionTime = (time.time() - startTime1)
     print('Runtime (whole script) in hours: {}'.format(executionTime/3600))
 
-def run_experiment(G,T,n,p,r,graphStr,diag=1):
+    sys.stdout.close()
+
+def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
     
     offdiag = r*diag   # maximum norm of indirect effect
 
@@ -119,10 +123,15 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1):
         graph_rep = str(g)
         dict_base.update({'Graph':sz+graph_rep})
 
-        # load weighted graph
-        name = save_path_graphs + graphStr + sz + graph_rep
-        A = scipy.sparse.load_npz(name+'-A.npz')
-        rand_wts = np.load(name+'-wts.npy')
+        if loadGraphs:
+            # load weighted graph
+            name = save_path_graphs + graphStr + sz + graph_rep
+            A = scipy.sparse.load_npz(name+'-A.npz')
+            rand_wts = np.load(name+'-wts.npy')
+        else:
+            A = ncls.config_model_nx(n)
+            rand_wts = np.random.rand(n,3)
+
         alpha = rand_wts[:,0].flatten()
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
@@ -131,7 +140,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1):
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
-        print("Ground-Truth TTE: {}\n".format(TTE))
+        # print("Ground-Truth TTE: {}".format(TTE))
 
         ####### Estimate ########
         estimators = []
