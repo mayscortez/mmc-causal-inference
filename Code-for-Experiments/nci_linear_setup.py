@@ -62,7 +62,7 @@ def config_model(di):
 
     return A
 
-def config_model_nx(N, law = "out", unif = True):
+def config_model_nx(N, exp = 2.5, law = "out", unif = True):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
     model with power law degree sequences
@@ -76,7 +76,7 @@ def config_model_nx(N, law = "out", unif = True):
     '''
     assert law in ["out", "in", "both"], "law must = 'out', 'in', or 'both'"
     if law == "out":
-        deg_seq_out = powerlaw_degrees(N, exp=2.5)
+        deg_seq_out = powerlaw_degrees(N, exp)
         if unif:
             deg_seq_in = uniform_degrees(N,np.sum(deg_seq_out))
         else:
@@ -102,7 +102,7 @@ def config_model_nx(N, law = "out", unif = True):
     return A
 
 def powerlaw_degrees(N, exp):
-    S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=2.5), decimals=0).astype(int)
+    S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
     out_sum = np.sum(S_out)
     if (out_sum % 2 != 0):
         ind = np.random.randint(N)

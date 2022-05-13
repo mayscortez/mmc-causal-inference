@@ -38,7 +38,7 @@ for n in sizes:
         graph_rep = str(g)
         sz = str(n)
         # Generate Network
-        A = ncls.config_model_nx(n,t=n*1000)
+        A = ncls.config_model_nx(n)
 
         # save graph
         name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
