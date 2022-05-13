@@ -8,17 +8,19 @@ import networkx as nx
 from math import log, ceil
 import sys
 import time
+import scipy.sparse
 
-path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
+path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = 'mmc-causal-inference/graphs/'
-save_path_graphs = 'mmc-causal-inference/graphs/'
+save_path = 'graphs/'
+save_path_graphs = 'graphs/'
 
 startTime = time.time()
+prevTime = startTime
 
 # Run Experiment
 G = 1               # number of graphs we want to average over
@@ -28,7 +30,8 @@ r = offdiag/diag    # ratio btw indirect & direct effects
 graph = "CON"       # configuration model
 # graph = "ER"     # Erdos Renyi
 
-sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000])
+#1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 
+sizes = np.array([31000, 33000, 35000, 38000])
 for n in sizes:
     print(n)
 
@@ -40,22 +43,33 @@ for n in sizes:
 
         # save graph
         name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
-        ncls.printGraph(A, name, symmetric=False)
+        #ncls.printGraph(A, name, symmetric=False)
+        scipy.sparse.save_npz(name,A)
         
-        # null effects
-        alpha = np.random.rand(n)
+        # # null effects
+        # alpha = np.random.rand(n)
 
-        # weights from simple model
-        C = ncls.simpleWeights(A, diag, offdiag)
+        # # weights from simple model
+        # C = ncls.simpleWeights(A, diag, offdiag)
 
-        # # Generate normalized weights
-        # C = ncls.weights_node_deg_unif(A)
-        # C = C*A
-        # C = ncls.normalized_weights(C, diag, offdiag)
+        # # # Generate normalized weights
+        # # C = ncls.weights_node_deg_unif(A)
+        # # C = C*A
+        # # C = ncls.normalized_weights(C, diag, offdiag)
 
+        # # Save weights
+        # name = save_path_graphs + graph + sz + '-' + graph_rep + '-C'
+        # ncls.printWeights(C, alpha, name)
+        
+        # random numbers to generate weights; each of three columns are for alpha, rand_diag, rand_offdiag
+        rand_wts = np.random.rand(n,3)
         # Save weights
-        name = save_path_graphs + graph + sz + '-' + graph_rep + '-C'
-        ncls.printWeights(C, alpha, name)
+        name = save_path_graphs + graph + sz + '-' + graph_rep + '-wts'
+        np.save(name,rand_wts)
+
+    print('Time to generate graphs of size {} in seconds: {}'.format(n,time.time() - prevTime))
+    prevTime = time.time()
 
 executionTime = (time.time() - startTime)
-print('Runtime in seconds: {}'.format(executionTime))
+print('Total runtime in seconds: {}'.format(executionTime))
+
