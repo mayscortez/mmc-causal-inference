@@ -67,8 +67,8 @@ for n in sizes:
 
         for i in range(T):
             Z = ncps.staggered_rollout_bern(beta, n, P)
-            K = np.sum(Z,1)
-            L = ncps.complete_coeffs(beta, n, K)
+            K = np.sum(Z,1) # realized number of people treated at each time step
+            L = ncps.complete_coeffs(beta, n, K) # coeffs for variance reduction
             y = fy(Z[beta,:])
             sums = ncps.outcome_sums(beta, fy, Z)
             TTE_gasr = ncps.graph_agnostic(n, sums, H)
