@@ -57,8 +57,6 @@ for n in sizes:
         alpha = rand_wts[:,0].flatten()
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
 
-        # A = (C > 0) + 0
-
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
 

@@ -652,7 +652,7 @@ def est_ols(n, p, y, A, z):
     '''
     M = np.ones((n,3))
     M[:,1] = z
-    M[:,2] = (A.dot(z) - z) / ((A.sum(axis=1)-1)+1e-10)
+    M[:,2] = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
 
     v = np.linalg.solve(M.T.dot(M),M.T.dot(y))
     return v[1]+v[2]
@@ -669,7 +669,7 @@ def est_ols_gen(y, A, z):
     n = A.shape[0]
     X = np.ones((n,3))
     X[:,1] = z
-    X[:,2] = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
+    X[:,2] = (A.dot(z) - z) / (np.array(A.sum(axis=1)).flatten()-1+1e-10)
 
     v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
     return v[1]+v[2]

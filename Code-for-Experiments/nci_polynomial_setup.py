@@ -11,8 +11,8 @@ from scipy import interpolate
 
 # Scale down the effects of higher order terms
 a1 = 1      # for linear effects
-a2 = 1/2    # for quadratic effects
-a3 = 1/4   # for cubic effects
+a2 = 1    # for quadratic effects
+a3 = 1   # for cubic effects
 
 # Define f(z)
 f_linear = lambda alpha, z, gz: alpha + a1*z + 0*gz
@@ -30,7 +30,7 @@ def ppom(f, C, alpha):
   n = C.shape[0]
   assert np.all(f(alpha, np.zeros(n), np.zeros(n)) == alpha), 'f(0) should equal alpha'
   #assert np.all(np.around(f(alpha, np.ones(n)) - alpha - np.ones(n), 10) >= 0), 'f must include linear component'
-  g = lambda z : C.dot(z)/np.sum(C,1)
+  g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
   return lambda z: f(alpha, C.dot(z), g(z)) 
 
 def staggered_rollout_bern(beta, n, P):
@@ -221,7 +221,7 @@ def poly_regression_prop(beta, y, A, z):
 
   X = np.ones((n,2*beta+1))
   count = 1
-  treated_neighb = (A.dot(z)-z)/((np.sum(A,1)-1)+1e-10)
+  treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
   for i in range(beta):
       X[:,count] = np.multiply(z,np.power(treated_neighb,i))
       X[:,count+1] = np.power(treated_neighb,i+1)
@@ -255,7 +255,7 @@ def poly_regression_num(beta, y, A, z):
 
   # Estimate TTE
   count = 1
-  treated_neighb = np.sum(A,1)-1
+  treated_neighb = np.array(A.sum(axis=1)).flatten()-1
   for i in range(beta):
       X[:,count] = np.multiply(z,np.power(treated_neighb,i))
       X[:,count+1] = np.power(treated_neighb,i+1)

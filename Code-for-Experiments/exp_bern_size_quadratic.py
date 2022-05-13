@@ -13,23 +13,26 @@ import pandas as pd
 import seaborn as sns
 import sys
 import time
+import scipy.sparse
 
-path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
+path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = 'mmc-causal-inference/outputFiles/'
-save_path_graphs = 'mmc-causal-inference/graphs/'
+save_path = 'outputFiles/'
+save_path_graphs = 'graphs/'
 
 startTime = time.time()
 # Run Experiment
-G = 2          # number of graphs per value of n
-T = 10          # number of trials per graph
+G = 1          # number of graphs per value of n
+T = 1          # number of trials per graph
 beta = 2        # degree of the outcomes model
 p = 0.50        # treatment probability
-r = 8/6
+diag = 6        # controls magnitude of direct effects
+offdiag = 8     # controls magnitude of indirect effects
+r = offdiag/diag
 graph = "CON"
 P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
 H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
@@ -47,12 +50,14 @@ for n in sizes:
         graph_rep = str(g)
         
         # load weighted graph
-        name = save_path_graphs + graph + sz + graph_rep + '-C'
-        C,alpha = ncls.loadGraph(name, n)
-        A = (C > 0) + 0
+        name = save_path_graphs + graph + sz + graph_rep
+        A = scipy.sparse.load_npz(name+'-A.npz')
+        rand_wts = np.load(name+'-wts.npy')
+        alpha = rand_wts[:,0].flatten()
+        C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        fy = lambda z: ncls.linear_pom(C,alpha,z)
+        fy = ncps.ppom(ncps.f_quadratic, C, alpha)
 
         # calculate and print ground-truth TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
