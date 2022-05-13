@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import networkx as nx
+import scipy.sparse
 
 # https://stackoverflow.com/a/3590105/9969751
 def constrained_sum_sample_pos(n, total):
@@ -95,8 +96,8 @@ def config_model_nx(N, law = "out", unif = True):
 
     G.remove_edges_from(nx.selfloop_edges(G)) # remove self-loops
     G = nx.DiGraph(G)                         # remove parallel edges
-    A = nx.to_numpy_array(G)                  # retrieve adjacency matrix
-    np.fill_diagonal(A, 1)                    # everyone is affected by their own treatment
+    A = nx.to_scipy_sparse_matrix(G)                  # retrieve adjacency matrix
+    A.setdiag(np.ones(N))                    # everyone is affected by their own treatment
 
     return A
 
@@ -216,7 +217,7 @@ def loadPartition(filename, n):
 # Functions to generate network weights
 ########################################
 
-def simpleWeights(A, diag=5, offdiag=5):
+def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.array([])):
     '''
     Returns weights generated from simpler model
 
@@ -225,17 +226,20 @@ def simpleWeights(A, diag=5, offdiag=5):
     offidiag (float): maximum norm of the indirect effects
     '''
     n = A.shape[0]
-    C_diag = diag*np.random.rand(n)
-    C_offdiag = offdiag*np.random.rand(n)
+    if rand_diag.size == 0:
+        rand_diag = np.random.rand(n)
+    if rand_offdiag.size == 0:
+        rand_offdiag = np.random.rand(n)
+    C_diag = diag*rand_diag
+    C_offdiag = offdiag*rand_offdiag
 
-    in_deg = np.sum(A,axis=1)  # array of the in-degree of each node
-    out_deg = np.sum(A,axis=0)  # array of the in-degree of each node
-    C = np.dot(np.diag(in_deg), A - np.eye(n))
-    col_sum = np.sum(C,axis=0)
-    col_sum = np.where(col_sum != 0, col_sum, col_sum+1)
-    C = C / col_sum
-    C = np.dot(C, np.diag(C_offdiag))
-    np.fill_diagonal(C, C_diag)
+    in_deg = scipy.sparse.diags(np.array(A.sum(axis=1)).flatten(),0)  # array of the in-degree of each node
+    C = in_deg.dot(A - scipy.sparse.eye(n))
+    col_sum = np.array(C.sum(axis=0)).flatten()
+    col_sum[col_sum==0] = 1
+    temp = scipy.sparse.diags(C_offdiag/col_sum)
+    C = C.dot(temp)
+    C.setdiag(C_diag)
     return C
 
 def weights_im_normal(n, d=1, sigma=0.1, neg=0):
@@ -662,7 +666,7 @@ def est_ols(n, p, y, A, z):
     '''
     M = np.ones((n,3))
     M[:,1] = z
-    M[:,2] = (A.dot(z) - z) / ((np.sum(A,1)-1)+1e-10)
+    M[:,2] = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
 
     v = np.linalg.solve(M.T.dot(M),M.T.dot(y))
     return v[1]+v[2]
@@ -679,7 +683,7 @@ def est_ols_gen(y, A, z):
     n = A.shape[0]
     X = np.ones((n,3))
     X[:,1] = z
-    X[:,2] = (A.dot(z) - z) / ((np.sum(A,1)-1)+1e-10)
+    X[:,2] = (A.dot(z) - z) / (np.array(A.sum(axis=1)).flatten()-1+1e-10)
 
     v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
     return v[1]+v[2]

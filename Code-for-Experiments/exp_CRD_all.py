@@ -12,16 +12,17 @@ import pandas as pd
 import seaborn as sns
 import sys
 import time
+import scipy.sparse
 
-path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
+path_to_module = 'Code-for-Experiments/'
 
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = 'mmc-causal-inference/outputFiles/'
-save_path_graphs = 'mmc-causal-inference/graphs/'
+save_path = 'outputFiles/'
+save_path_graphs = 'graphs/'
 
 G = 1          # number of graphs we want to average over
 T = 1          # number of trials per graph
@@ -50,10 +51,11 @@ for n in sizes:
         graph_rep = str(g)
 
         # load weighted graph
-        name = save_path_graphs + graph + sz + graph_rep + '-C'
-        C,alpha = ncls.loadGraph(name, n)
-
-        A = (C > 0) + 0
+        name = save_path_graphs + graph + sz + graph_rep
+        A = scipy.sparse.load_npz(name+'-A.npz')
+        rand_wts = np.load(name+'-wts.npy')
+        alpha = rand_wts[:,0].flatten()
+        C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
@@ -73,14 +75,17 @@ for n in sizes:
         for i in range(T):
             z = ncls.completeRD(n,p)
             y = fy(z)
-            y0 = fy(np.zeros(n))
-            y_diff = y - y0
-            degs = np.sum(A,axis=1)
-            treated_degs = A.dot(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
+
+            # degs = A.sum(axis=1)
+            # treated_degs = A.dot(z)
             #TTE_aware[i] = sum([y_diff[i] * degs[i]/treated_degs[i] * 1/(1-(1-p)**degs[i]) for i in range(n) if treated_degs[i] > 0]) * 1/n
+            
+            y0 = fy(np.zeros(n))
+            y_diff = y - y0
             TTE_reduction[i] = 1/(1-(1-p)**n) * np.sum(y_diff)/np.sum(z)
+
             TTE_diff_means_naive[i] = ncls.diff_in_means_naive(y,z)
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
             TTE_ols[i] = ncls.est_ols_gen(y,A,z)
@@ -106,9 +111,9 @@ df.to_csv(save_path+graph+'-size-CRD-linear-full-data.csv')
 startTime2 = time.time()
 n = 5000        # number of nodes in network
 sz = str(n) + '-'
-diag_max = 6     # maximum norm of direct effect
-offdiag_max = 8  # maximum norm of indirect effect
-r = offdiag_max/diag_max
+diag = 6     # maximum norm of direct effect
+offdiag = 8  # maximum norm of indirect effect
+r = offdiag/diag
 
 p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
 results = []
@@ -121,14 +126,19 @@ for p in p_treatments:
     for g in range(G):
         if g % 5 == 0:
             print("Graph #{}".format(g))
-        graph_rep = + str(g)
+        graph_rep = str(g)
         pr = str(p) + '-' 
 
-        # load weighted graph
-        name = save_path_graphs + graph + sz + graph_rep + '-C'
-        C,alpha = ncls.loadGraph(name, n)
+        # # load weighted graph
+        # name = save_path_graphs + graph + sz + graph_rep + '-C'
+        # C,alpha = ncls.loadGraph(name, n)
+        # A = (C > 0) + 0
 
-        A = (C > 0) + 0
+        name = save_path_graphs + graph + sz + graph_rep
+        A = scipy.sparse.load_npz(name+'-A.npz')
+        rand_wts = np.load(name+'-wts.npy')
+        alpha = rand_wts[:,0].flatten()
+        C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
 
         # potential outcomes model
         fy = lambda z: ncls.linear_pom(C,alpha,z)
@@ -148,13 +158,15 @@ for p in p_treatments:
         for i in range(T):
             z = ncls.completeRD(n,p)
             y = fy(z)
-            y0 = fy(np.zeros(n))
-            y_diff = y - y0
-            degs = np.sum(A,axis=1)
-            treated_degs = A.dot(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
+            
+            # degs = A.sum(axis=1)
+            # treated_degs = A.dot(z)
             #TTE_aware[i] = sum([y_diff[i] * degs[i]/treated_degs[i] * 1/(1-(1-p)**degs[i]) for i in range(n) if treated_degs[i] > 0]) * 1/n
+            
+            y0 = fy(np.zeros(n))
+            y_diff = y - y0
             TTE_reduction[i] = 1/(1-(1-p)**n) * np.sum(y_diff)/np.sum(z)
             TTE_diff_means_naive[i] = ncls.diff_in_means_naive(y,z)
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
@@ -206,11 +218,16 @@ for r in ratio:
             print("Graph #{}".format(g))
         graph_rep = str(g)
 
-        # load graph
-        name = save_path_graphs + graph + sz + rat + graph_rep + '-C'
-        C, alpha = ncls.loadWeights(name, symmetric=False)
+        # # load graph
+        # name = save_path_graphs + graph + sz + rat + graph_rep + '-C'
+        # C, alpha = ncls.loadWeights(name, symmetric=False)
+        # A = (C > 0) + 0
 
-        A = (C > 0) + 0
+        name = save_path_graphs + graph + sz + graph_rep
+        A = scipy.sparse.load_npz(name+'-A.npz')
+        rand_wts = np.load(name+'-wts.npy')
+        alpha = rand_wts[:,0].flatten()
+        C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
 
         ## Potential Outcomes Model ##
         fy = lambda z: ncls.linear_pom(C,alpha,z)
@@ -225,14 +242,17 @@ for r in ratio:
         for i in range(T):
             z = ncls.completeRD(n,p)
             y = fy(z)
-            y0 = fy(np.zeros(n))
-            y_diff = y - y0
-            degs = np.sum(A,axis=1)
-            treated_degs = A.dot(z)
 
             TTE_gasr[i] = (1/n)*np.sum(l0*fy(np.zeros(n)) + l1*y)
+
+            # degs = A.sum(axis=1)
+            # treated_degs = A.dot(z)
             #TTE_aware[i] = sum([y_diff[i] * degs[i]/treated_degs[i] * 1/(1-(1-p)**degs[i]) for i in range(n) if treated_degs[i] > 0]) * 1/n
+            
+            y0 = fy(np.zeros(n))
+            y_diff = y - y0
             TTE_reduction[i] = 1/(1-(1-p)**n) * np.sum(y_diff)/np.sum(z)
+
             TTE_diff_means_naive[i] = ncls.diff_in_means_naive(y,z)
             TTE_diff_means_fraction[i] = ncls.diff_in_means_fraction(n,y,A,z,0.2)
             TTE_ols[i] = ncls.est_ols_gen(y,A,z)
