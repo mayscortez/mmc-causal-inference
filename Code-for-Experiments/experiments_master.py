@@ -13,21 +13,15 @@ import seaborn as sns
 import sys
 import time
 import scipy.sparse
-
-
-path_to_module = 'Code-for-Experiments/'
-
-sys.path.append(path_to_module)
-
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
+path_to_module = 'Code-for-Experiments/'
+sys.path.append(path_to_module)
 save_path = 'outputFiles/'
 save_path_graphs = 'graphs/'
 
-
 def main():
-
     G = 1          # number of graphs we want to average over
     T = 1          # number of trials per graph
     graphStr = "CON"   # configuration model
