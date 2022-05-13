@@ -62,13 +62,12 @@ def config_model(di):
 
     return A
 
-def config_model_nx(N, t = 50000, law = "out", unif = True):
+def config_model_nx(N, exp = 2.5, law = "out", unif = True):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
     model with power law degree sequences
 
     N (int): number of nodes
-    t (int): number of tries for powerlaw sequence
     law (str): inicates whether in-, out- or both in- and out-degrees should be distributed as a power law
         "out" : out-degrees distributed as powerlaw, in-degrees sum up to same # as out-degrees
         "in" : in-degrees distributed as powerlaw, out-degrees sum up to same # as in-degrees
@@ -77,20 +76,21 @@ def config_model_nx(N, t = 50000, law = "out", unif = True):
     '''
     assert law in ["out", "in", "both"], "law must = 'out', 'in', or 'both'"
     if law == "out":
-        deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
+        deg_seq_out = powerlaw_degrees(N, exp)
         if unif:
             deg_seq_in = uniform_degrees(N,np.sum(deg_seq_out))
         else:
             deg_seq_in = constrained_sum_sample_nonneg(N,np.sum(deg_seq_out))
     elif law == "in":
-        deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
+        deg_seq_in = powerlaw_degrees(N, exp=2.5)
         if unif:
             deg_seq_out = uniform_degrees(N,np.sum(deg_seq_in))
         else:
             deg_seq_out = constrained_sum_sample_nonneg(N,np.sum(deg_seq_in))
     else:
-        deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
+        deg_seq_out = powerlaw_degrees(N, exp=2.5)
+        #this will likely spit out error bc sum of indegrees might not be equal to sum of outdegrees
+        deg_seq_in = powerlaw_degrees(N, exp=2.5)
 
     G = nx.generators.degree_seq.directed_configuration_model(deg_seq_in,deg_seq_out)
 
@@ -100,6 +100,20 @@ def config_model_nx(N, t = 50000, law = "out", unif = True):
     A.setdiag(np.ones(N))                    # everyone is affected by their own treatment
 
     return A
+
+def powerlaw_degrees(N, exp):
+    S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
+    out_sum = np.sum(S_out)
+    if (out_sum % 2 != 0):
+        ind = np.random.randint(N)
+        S_out[ind] += 1
+    '''
+    S_in = np.around(nx.utils.powerlaw_sequence(N, exponent=2.5), decimals=0).astype(int)
+    while (np.sum(S_in) != out_sum):
+        # either keep adding or subtracting until they are equal
+        pass
+    '''
+    return S_out
 
 def uniform_degrees(n,sum):
     '''
