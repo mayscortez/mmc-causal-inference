@@ -21,8 +21,8 @@ sys.path.append(path_to_module)
 import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
-save_path = 'outputFiles/'
-save_path_graphs = 'graphs/'
+save_path = 'mmc-causal-inference/outputFiles/'
+save_path_graphs = 'mmc-causal-inference/graphs/'
 
 startTime = time.time()
 # Run Experiment
@@ -33,7 +33,7 @@ p = 0.50        # treatment probability
 diag = 6        # controls magnitude of direct effects
 offdiag = 8     # controls magnitude of indirect effects
 r = offdiag/diag
-graph = "CON"
+graph = "CON"   # configuration model
 P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
 H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
 sizes = np.array([5000, 9000, 15000, 19000, 23000, 27000, 31000, 35000])
@@ -64,26 +64,29 @@ for n in sizes:
         #print("Ground-Truth TTE: {}\n".format(TTE))
 
         ####### Estimate ########
-        TTE_gasr, TTE_pol1, TTE_pol2, TTE_linpoly, TTE_linspl, TTE_quadspl = np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)
 
         for i in range(T):
             Z = ncps.staggered_rollout_bern(beta, n, P)
+            K = np.sum(Z,1)
+            L = ncps.complete_coeffs(beta, n, K)
             y = fy(Z[beta,:])
             sums = ncps.outcome_sums(beta, fy, Z)
-            TTE_gasr[i] = ncps.graph_agnostic(n, sums, H)
-            TTE_pol1[i] = ncps.poly_regression_prop(beta, y, A, Z[beta,:])
-            TTE_pol2[i] = ncps.poly_regression_num(beta, y, A, Z[beta,:])
-            TTE_linpoly[i], TTE_linspl[i] = ncps.poly_interp_linear(n, P, sums)
-            TTE_quadspl[i] = ncps.poly_interp_splines(n, P, sums, 'quadratic')
+            TTE_gasr = ncps.graph_agnostic(n, sums, H)
+            TTE_gasr_VR = ncps.graph_agnostic(n, sums, L)
+            TTE_pol1 = ncps.poly_regression_prop(beta, y, A, Z[beta,:])
+            TTE_pol2 = ncps.poly_regression_num(beta, y, A, Z[beta,:])
+            TTE_linpoly, TTE_linspl = ncps.poly_interp_linear(n, P, sums)
+            TTE_quadspl = ncps.poly_interp_splines(n, P, sums, 'quadratic')
 
-            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':sz+graph_rep})
-            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1[i]-TTE)/TTE, 'Graph':sz+graph_rep})
-            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2[i]-TTE)/TTE, 'Graph':sz+graph_rep})
-            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly[i]-TTE)/TTE, 'Graph':sz+graph_rep})
-            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl[i]-TTE)/TTE, 'Graph':sz+graph_rep})
-            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl[i]-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Graph-AgnosticVR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr_VR-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl-TTE)/TTE, 'Graph':sz+graph_rep})
+            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl-TTE)/TTE, 'Graph':sz+graph_rep})
     executionTime2 = (time.time() - startTime2)
-    print('Runtime (in seconds) for n = {} step: {}'.format(n,executionTime2))
+    print('Runtime (in seconds) for n = {} step: {}\n'.format(n,executionTime2))
 
 executionTime = (time.time() - startTime)
 print('Runtime of entire script in minutes: {}'.format(executionTime/60))    

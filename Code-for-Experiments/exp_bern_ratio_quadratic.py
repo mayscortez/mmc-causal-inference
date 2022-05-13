@@ -13,8 +13,9 @@ import pandas as pd
 import seaborn as sns
 import sys
 import time
+import scipy.sparse
 
-path_to_module = 'mmc-causal-inference/Code-for-Experiments/'
+path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import nci_linear_setup as ncls
@@ -25,22 +26,18 @@ save_path_graphs = 'mmc-causal-inference/graphs/'
 
 startTime = time.time()
 # Run Experiment
+G = 1          # number of graphs per value of r
+T = 1          # number of trials per graph
+beta = 2        # degree of outcomes model
+p = 0.50        # treatment probability
 n = 21000       # number of nodes in network
 sz = str(n) + '-'
 diag = 10       # maximum norm of direct effect
-beta = 2        # degree of outcomes model
-p = 0.50        # treatment probability
-G = 2          # number of graphs per value of r
-T = 10          # number of trials per graph
-
+graph = "CON"   # configuration model
 P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
 H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
-graph = "CON"
-
-# baseline parameters
-alpha = np.random.rand(n)
 
 for r in ratio:
     print('ratio: {}'.format(r))
@@ -53,48 +50,44 @@ for r in ratio:
             print("Graph #{}".format(g))
         graph_rep = str(g)
 
-        # load graph
-        name = save_path_graphs + graph + sz + graph_rep + '-A'
-        A = ncls.loadGraph(name, symmetric=False)
+        # load weighted graph
+        name = save_path_graphs + graph + sz + graph_rep
+        A = scipy.sparse.load_npz(name+'-A.npz')
+        rand_wts = np.load(name+'-wts.npy')
+        alpha = rand_wts[:,0].flatten()
+        C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
-        # null effects
-        alpha = np.random.rand(n)
-
-        # weights from simple model
-        C = ncls.simpleWeights(A, diag, offdiag)
-
-        # Save weights
-        name = save_path_graphs + graph + sz + rat + graph_rep + '-C'
-        ncls.printWeights(C, alpha, name)
-
         # potential outcomes model
-        fy = lambda z: ncls.linear_pom(C,alpha,z)
+        fy = ncps.ppom(ncps.f_quadratic, C, alpha)
 
         # calculate and print ground-truth TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
         #print("Ground-Truth TTE: {}\n".format(TTE))
 
         ####### Estimate ########
-        TTE_gasr, TTE_pol1, TTE_pol2, TTE_linpoly, TTE_linspl, TTE_quadspl = np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T), np.zeros(T)
 
         for i in range(T):
             Z = ncps.staggered_rollout_bern(beta, n, P)
+            K = np.sum(Z,1)
+            L = ncps.complete_coeffs(beta, n, K)
             y = fy(Z[beta,:])
             sums = ncps.outcome_sums(beta, fy, Z)
-            TTE_gasr[i] = ncps.graph_agnostic(n, sums, H)
-            TTE_pol1[i] = ncps.poly_regression_prop(beta, y, A, Z[beta,:])
-            TTE_pol2[i] = ncps.poly_regression_num(beta, y, A, Z[beta,:])
-            TTE_linpoly[i], TTE_linspl[i] = ncps.poly_interp_linear(n, P, sums)
-            TTE_quadspl[i] = ncps.poly_interp_splines(n, P, sums, 'quadratic')
+            TTE_gasr = ncps.graph_agnostic(n, sums, H)
+            TTE_gasr_VR = ncps.graph_agnostic(n, sums, L)
+            TTE_pol1 = ncps.poly_regression_prop(beta, y, A, Z[beta,:])
+            TTE_pol2 = ncps.poly_regression_num(beta, y, A, Z[beta,:])
+            TTE_linpoly, TTE_linspl = ncps.poly_interp_linear(n, P, sums)
+            TTE_quadspl = ncps.poly_interp_splines(n, P, sums, 'quadratic')
 
-            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr[i]-TTE)/TTE, 'Graph':rat+graph_rep})
-            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1[i]-TTE)/TTE, 'Graph':rat+graph_rep})
-            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2[i]-TTE)/TTE, 'Graph':rat+graph_rep})
-            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly[i]-TTE)/TTE, 'Graph':rat+graph_rep})
-            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl[i]-TTE)/TTE, 'Graph':rat+graph_rep})
-            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl[i]-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Graph-Agnostic', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Graph-AgnosticVR', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_gasr_VR-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Prop', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol1-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'LeastSqs-Num', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_pol2-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Interp-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linpoly-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Spline-Lin', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_linspl-TTE)/TTE, 'Graph':rat+graph_rep})
+            results.append({'Estimator': 'Spline-Quad', 'rep': i, 'n': n, 'p': p, 'ratio': r, 'Bias': (TTE_quadspl-TTE)/TTE, 'Graph':rat+graph_rep})
     executionTime2 = (time.time() - startTime2)
-    print('Runtime (in seconds) for r = {} step: {}'.format(r,executionTime2))
+    print('Runtime (in seconds) for r = {} step: {}\n'.format(r,executionTime2))
 
 executionTime = (time.time() - startTime)
 print('Runtime of entire script in minutes: {}'.format(executionTime/60))    
