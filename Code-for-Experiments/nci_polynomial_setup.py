@@ -87,7 +87,7 @@ def seq_treatment_probs(beta, p):
   P = np.fromfunction(fun, shape=(beta+1,))
   return P
 
-def seq_treated(beta, p, n):
+def seq_treated(beta, p, n, K=np.array([])):
   '''
   Returns number of people treated by each time step with K = [k0, k1, ... , kbeta] via ki = i*n*p/beta
   

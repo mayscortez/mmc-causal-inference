@@ -42,7 +42,7 @@ results = []
 for n in sizes:
     print("n = {}".format(n))
     sz = str(n) + '-'
-    K = ncps.seq_treated(beta,p)            # sequence of treated for CRD + staggered rollout
+    K = ncps.seq_treated(beta,p,n)            # sequence of treated for CRD + staggered rollout
     L = ncps.complete_coeffs(beta, n, K)    # coefficents for GASR estimator under CRD
     startTime1 = time.time()
 
@@ -87,7 +87,7 @@ for n in sizes:
     print('Runtime (in seconds) for n = {} step: {}\n'.format(n,executionTime1))
 
 executionTime = (time.time() - startTime)
-print('Runtime of size experiment in minutes: {}'.format(executionTime/60))    
+print('Runtime of size experiment in minutes: {}\n'.format(executionTime/60))    
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-size-CRD-quadratic-full-data.csv') 
 
@@ -106,7 +106,7 @@ startTime_tp = time.time()
 
 for p in p_treatments:
     print("Treatment Probability: {}\n".format(p))
-    K = ncps.seq_treated(beta,p)            # sequence of treated for CRD + staggered rollout
+    K = ncps.seq_treated(beta,p,n)            # sequence of treated for CRD + staggered rollout
     L = ncps.complete_coeffs(beta, n, K)    # coefficents for GASR estimator under CRD
     pr = str(p) + '-'
     startTime1 = time.time()
@@ -114,7 +114,7 @@ for p in p_treatments:
     for g in range(G):
         if g % 5 == 0:
             print("Graph #{}".format(g))
-        graph_rep = + str(g) 
+        graph_rep = str(g) 
         
         # load weighted graph
         name = save_path_graphs + graph + sz + graph_rep
@@ -152,7 +152,7 @@ for p in p_treatments:
     print('Runtime (in seconds) for p = {} step: {}\n'.format(p,executionTime1))
 
 executionTime = (time.time() - startTime_tp)
-print('Runtime of tp experiment in minutes: {}'.format(executionTime/60)) 
+print('Runtime of tp experiment in minutes: {}\n'.format(executionTime/60)) 
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-tp-CRD-quadratic-full-data.csv')  
 
@@ -164,7 +164,7 @@ n = 21000       # number of nodes in network
 sz = str(n) + '-'
 diag = 10       # maximum norm of direct effect
 graph = "CON"   # configuration model
-K = ncps.seq_treated(beta,p)            # sequence of treated for CRD + staggered rollout
+K = ncps.seq_treated(beta,p,n)            # sequence of treated for CRD + staggered rollout
 L = ncps.complete_coeffs(beta, n, K)    # coefficents for GASR estimator under CRD
 ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 results = []
@@ -217,7 +217,7 @@ for r in ratio:
     print('Runtime (in seconds) for r = {} step: {}\n'.format(r,executionTime1))
 
 executionTime = (time.time() - start_Time_rat)
-print('Runtime of tp experiment in minutes: {}'.format(executionTime/60))   
+print('Runtime of tp experiment in minutes: {}\n'.format(executionTime/60))   
 df = pd.DataFrame.from_records(results)
 df.to_csv(save_path+graph+'-ratio-CRD-quadratic-full-data.csv')  
 
