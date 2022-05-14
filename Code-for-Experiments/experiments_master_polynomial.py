@@ -16,16 +16,16 @@ import nci_linear_setup as ncls
 import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
-sys.path.append(path_to_module)
-save_path = 'outputFiles/'
+#sys.path.append(path_to_module)
+save_path = 'mmc-causal-inference/outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 2          # number of graphs we want to average over
-    T = 10          # number of trials per graph
+    G = 20          # number of graphs we want to average over
+    T = 50          # number of trials per graph
     graphStr = "CON"   # configuration model
 
-    sys.stdout = open(save_path+'experiments_output.txt', 'w')
+    sys.stdout = open(save_path+'experiments_output_quadratic.txt', 'w')
 
     ###########################################
     # Run Experiment: Varying Size of Network

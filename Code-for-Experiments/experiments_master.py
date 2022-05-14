@@ -17,11 +17,11 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
-save_path = 'outputFiles/'
+save_path = 'mmc-causal-inference/outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 10          # number of graphs we want to average over
+    G = 30          # number of graphs we want to average over
     T = 100          # number of trials per graph
     graphStr = "CON"   # configuration model
 
