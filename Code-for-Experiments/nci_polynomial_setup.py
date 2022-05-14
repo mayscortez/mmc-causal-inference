@@ -200,11 +200,12 @@ def poly_interp_linear(n, P, sums):
   sums (numpy array): sums of outcomes at each time step
   '''
 
-  f_lin = interpolate.interp1d(P, sums, fill_value='extrapolate')
+  #f_lin = interpolate.interp1d(P, sums, fill_value='extrapolate')
   f_spl = interpolate.interp1d(P, sums, kind='slinear', fill_value='extrapolate')
-  TTE_hat1 = (1/n)*(f_lin(1) - f_lin(0))
+  #TTE_hat1 = (1/n)*(f_lin(1) - f_lin(0))
   TTE_hat2 = (1/n)*(f_spl(1) - f_spl(0))
-  return TTE_hat1, TTE_hat2
+  #return TTE_hat1, TTE_hat2
+  return TTE_hat2
 
 
 def poly_regression_prop(beta, y, A, z):
