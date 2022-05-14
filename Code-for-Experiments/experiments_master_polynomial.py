@@ -1,5 +1,5 @@
 '''
-Experiments: Linear setting
+Experiments: polynomial setting
 '''
 
 # Setup
@@ -21,8 +21,8 @@ save_path = 'outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 10          # number of graphs we want to average over
-    T = 100          # number of trials per graph
+    G = 2          # number of graphs we want to average over
+    T = 10          # number of trials per graph
     graphStr = "CON"   # configuration model
 
     sys.stdout = open(save_path+'experiments_output.txt', 'w')
@@ -34,10 +34,10 @@ def main():
     diag = 6        # controls magnitude of direct effects
     offdiag = 8     # controls magnitude of indirect effects
     r = offdiag/diag
-    p = 0.05        # treatment probability
+    p = 0.50        # treatment probability
 
     results = []
-    sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
+    sizes = np.array([5000, 9000, 15000, 19000, 23000, 27000, 31000, 35000])
 
     for n in sizes:
         # print("n = {}".format(n))
@@ -49,15 +49,15 @@ def main():
         print('Runtime (in seconds) for n = {} step: {}'.format(n,executionTime))
 
     executionTime = (time.time() - startTime1)
-    print('Runtime (size experiment) in minutes: {}'.format(executionTime/60))        
+    print('Runtime (size experiment) in minutes: {}\n'.format(executionTime/60))        
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-size-linear-full-data.csv')
+    df.to_csv(save_path+graphStr+'-size-quadratic-full-data.csv')
 
     ################################################
     # Run Experiment: Varying Treatment Probability 
     ################################################
     startTime2 = time.time()
-    n = 5000        # number of nodes in network
+    n = 21000        # number of nodes in network
     diag = 6     # maximum norm of direct effect
     offdiag = 8  # maximum norm of indirect effect
     r = offdiag/diag
@@ -75,15 +75,15 @@ def main():
         print('Runtime (in seconds) for p = {} step: {}'.format(p,executionTime))
 
     executionTime = (time.time() - startTime2)
-    print('Runtime (tp experiment) in minutes: {}'.format(executionTime/60))        
+    print('Runtime (tp experiment) in minutes: {}\n'.format(executionTime/60))        
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-tp-linear-full-data.csv')
+    df.to_csv(save_path+graphStr+'-tp-quadratic-full-data.csv')
 
     ###########################################################
     # Run Experiment: Varying Ratio of Indirect & Direct Effects 
     ###########################################################
-    n = 5000
-    p = 0.06    # treatment probability
+    n = 21000
+    p = 0.50    # treatment probability
     diag = 10   # maximum norm of direct effect
 
     results = []
@@ -99,16 +99,16 @@ def main():
         print('Runtime (in seconds) for r = {} step: {}'.format(r,executionTime))
 
     executionTime = (time.time() - startTime2)
-    print('Runtime (ratio experiment) in minutes: {}'.format(executionTime/60))          
+    print('Runtime (ratio experiment) in minutes: {}\n'.format(executionTime/60))          
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-ratio-linear-full-data.csv')
+    df.to_csv(save_path+graphStr+'-ratio-quadratic-full-data.csv')
 
     executionTime = (time.time() - startTime1)
     print('Runtime (whole script) in hours: {}'.format(executionTime/3600))
 
     sys.stdout.close()
 
-def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
+def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
     
     offdiag = r*diag   # maximum norm of indirect effect
 
@@ -133,7 +133,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        fy = lambda z: ncls.linear_pom(C,alpha,z)
+        fy = ncps.ppom(ncps.f_quadratic, C, alpha)
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
@@ -141,32 +141,42 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
         ####### Estimate ########
         estimators = []
-        estimators.append(lambda y,z: (1/p*n)*np.sum(y - fy(np.zeros(n))))
-        estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
-        estimators.append(lambda y,z: 1/(1-(1-p)**n) * np.sum(y - fy(np.zeros(n)))/np.sum(z))
-        estimators.append(lambda y,z: ncls.diff_in_means_naive(y,z))
-        estimators.append(lambda y,z: ncls.diff_in_means_fraction(n,y,A,z,0.2))
-        estimators.append(lambda y,z: ncls.est_ols_gen(y,A,z))
-        estimators.append(lambda y,z: ncls.est_ols_treated(y,A,z))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, L))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_prop(beta, y, A, z))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_num(beta, y, A, z))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_linear(n, K, sums))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_splines(n, K, sums, 'quadratic'))
 
-        alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac', 'OLS-Prop', 'OLS-Num']
+        alg_names = ['Graph-Agnostic', 'Graph-AgnosticVR', 'LeastSqs-Prop', 'LeastSqs-Num','Spline-Lin','Spline-Quad']
 
+        K = ncps.seq_treated(beta,p,n)            # sequence of treated for CRD + staggered rollout
+        L = ncps.complete_coeffs(beta, n, K)    # coefficents for GASR estimator under CRD
+        P = ncps.seq_treatment_probs(beta,p)    # sequence of probabilities for bern staggered rollout RD
+        H = ncps.bern_coeffs(beta,P)            # coefficents for GASR estimator under Bernoulli design
+        
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})
-            z = ncls.completeRD(n,int(np.floor(p*n)))
+            Z = ncps.staggered_rollout_complete(beta, n, K)
+            z = Z[beta,:]
             y = fy(z)
+            sums = ncps.outcome_sums(beta, fy, Z)
 
             for alg in range(len(alg_names)):
-                est = estimators[alg](y,z)
+                est = estimators[alg](y,z,sums,L,K,L)
                 dict_base.update({'Estimator': alg_names[alg], 'Bias': (est-TTE)/TTE})
                 results.append(dict_base.copy())
 
             dict_base.update({'Rand': 'Bernoulli'})
-            z = ncls.bernoulli(n,p)
+            Z = ncps.staggered_rollout_bern(beta, n, P)
+            z = Z[beta,:]
             y = fy(z)
-
+            sums = ncps.outcome_sums(beta, fy, Z)
+            Kr = np.sum(Z,1) # realized number of people treated at each time step
+            Lr = ncps.complete_coeffs(beta, n, Kr) # coeffs for variance reduction
+            
             for alg in range(len(alg_names)):
-                est = estimators[alg](y,z)
+                est = estimators[alg](y,z,sums,H,P,Lr)
                 dict_base.update({'Estimator': alg_names[alg], 'Bias': (est-TTE)/TTE})
                 results.append(dict_base.copy())
 
