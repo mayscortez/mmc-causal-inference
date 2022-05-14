@@ -141,7 +141,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
         ####### Estimate ########
         estimators = []
-        estimators.append(lambda y,z: (1/p*n)*np.sum(y - fy(np.zeros(n))))
+        estimators.append(lambda y,z: (1/(p*n))*np.sum(y - fy(np.zeros(n))))
         estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
         estimators.append(lambda y,z: 1/(1-(1-p)**n) * np.sum(y - fy(np.zeros(n)))/np.sum(z))
         estimators.append(lambda y,z: ncls.diff_in_means_naive(y,z))
