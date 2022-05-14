@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-save_path = 'mmc-causal-inference/outputFiles/'
+save_path = 'outputFiles/'
 graph = "CON" # configuration model (with out-degrees distributed as power law)
 experiment = "-size-linear" # vary size; linear model
 
@@ -18,7 +18,7 @@ df = pd.read_csv(save_path+graph+experiment+'-full-data.csv')
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Rand'].isin(['Bernoulli'])) & (df['Estimator'] != 'Graph-Agnostic-num')], ci='sd', legend='brief', markers=True)
+sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Rand'].isin(['Bernoulli'])) & (df['Estimator'] != 'Graph-Agnostic-num') &(df['Estimator'] != 'Graph-Agnostic-p')], ci='sd', legend='brief', markers=True)
 sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Rand'].isin(['CRD'])) & (df['Estimator'].isin(['Graph-Agnostic-num', 'Diff-Means-Stnd', 'Diff-Means-Frac', 'OLS-Prop', 'OLS-Num']))], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Size of Population (n)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
@@ -33,8 +33,8 @@ plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Estimator'].isin(['Graph-Agnostic-p','Graph-Agnostic-VR'])) & (df['Rand'].isin(['Bernoulli']))], ci='sd', legend='brief', markers=True)
-sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Rand'].isin(['CRD'])) & (df['Estimator'].isin(['Graph-Agnostic-num']))], ci='sd', legend='brief', markers=True)
+sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[((df['Estimator'].isin(['Graph-Agnostic-p','Graph-AgnosticVR'])) & (df['Rand'].isin(['Bernoulli']))) | ((df['Rand'].isin(['CRD'])) & (df['Estimator'].isin(['Graph-Agnostic-num'])))], ci='sd', legend='brief', markers=True)
+#sns.lineplot(x='n', y='Bias', hue='Estimator', style='Estimator', data=df.loc[(df['Rand'].isin(['CRD'])) & (df['Estimator'].isin(['Graph-Agnostic-num']))], ci='sd', legend='brief', markers=True)
 ax.set_xlabel("Size of Population (n)", fontsize = 12)
 ax.set_ylabel("Relative Bias", fontsize = 12)
 ax.set_title('Performance of OUR Estimators (BRD & CRD)', fontsize=16)
