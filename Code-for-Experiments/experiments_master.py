@@ -17,7 +17,7 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
-save_path = 'mmc-causal-inference/outputFiles/'
+save_path = 'outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
