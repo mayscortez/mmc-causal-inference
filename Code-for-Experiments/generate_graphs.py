@@ -23,14 +23,11 @@ startTime = time.time()
 prevTime = startTime
 
 # Run Experiment
-G = 1               # number of graphs we want to average over
-diag = 6            # controls magnitude of direct effects
-offdiag = 8         # controls magnitude of indirect effects
-r = offdiag/diag    # ratio btw indirect & direct effects
+G = 20               # number of graphs we want to average over
 graph = "CON"       # configuration model
 # graph = "ER"     # Erdos Renyi
 
-sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000])
+sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])#, 17000, 19000, 21000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000])
 for n in sizes:
     print(n)
 
