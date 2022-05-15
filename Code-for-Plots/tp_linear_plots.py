@@ -7,12 +7,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-save_path = 'mmc-causal-inference/outputFiles/'
+load_path = 'mmc-causal-inference/outputFiles/'
+save_path = 'mmc-causal-inference/outputFiles/Plots/'
 graph = "CON" # configuration model with out-degrees distributed as power law
 experiment = "-tp-linear" # vary treatment probability; linear model
 
 # Create and save plots
-df = pd.read_csv(save_path+graph+experiment+'-full-data.csv')
+df = pd.read_csv(load_path+graph+experiment+'-full-data.csv')
 
 # Plot with all the estimators (B & CRD)
 fig = plt.figure()
