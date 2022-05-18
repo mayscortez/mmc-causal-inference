@@ -230,21 +230,23 @@ def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.
     if rand_offdiag.size == 0:
         rand_offdiag = np.random.rand(n)
     C_offdiag = offdiag*rand_offdiag
-    out_deg = np.array(A.sum(axis=0)).flatten() # array of the out-degree of each node
-    out_deg[out_deg==0] = 1
-    temp = scipy.sparse.diags(C_offdiag/out_deg)
-    C = A.dot(temp)
+
+    in_deg = scipy.sparse.diags(np.array(A.sum(axis=1)).flatten(),0)  # array of the in-degree of each node
+    C = in_deg.dot(A - scipy.sparse.eye(n))
+    col_sum = np.array(C.sum(axis=0)).flatten()
+    col_sum[col_sum==0] = 1
+    temp = scipy.sparse.diags(C_offdiag/col_sum)
+    C = C.dot(temp)
+
+    # out_deg = np.array(A.sum(axis=0)).flatten() # array of the out-degree of each node
+    # out_deg[out_deg==0] = 1
+    # temp = scipy.sparse.diags(C_offdiag/out_deg)
+    # C = A.dot(temp)
 
     if rand_diag.size == 0:
         rand_diag = np.random.rand(n)
     C_diag = diag*rand_diag
     C.setdiag(C_diag)
-
-    # in_deg = scipy.sparse.diags(np.array(A.sum(axis=1)).flatten(),0)  # array of the in-degree of each node
-    # C = in_deg.dot(A - scipy.sparse.eye(n))
-    # col_sum = np.array(C.sum(axis=0)).flatten()
-    # col_sum[col_sum==0] = 1
-    # temp = scipy.sparse.diags(C_offdiag/col_sum)
 
     return C
 
@@ -734,9 +736,9 @@ def diff_in_means_fraction(n, y, A, z, tol):
     '''
     z = np.reshape(z,(n,1))
     treated = 1*(A.dot(z)-1 >= tol*(A.dot(np.ones((n,1)))-1))
-    treated = np.multiply(treated,z)
+    treated = np.multiply(treated,z).flatten()
     control = 1*(A.dot(1-z)-1 >= tol*(A.dot(np.ones((n,1)))-1))
-    control = np.multiply(control,1-z)
+    control = np.multiply(control,1-z).flatten()
 
     est = 0
     if np.sum(treated) > 0:
