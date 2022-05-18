@@ -85,7 +85,7 @@ def main():
     # Run Experiment: Varying Ratio of Indirect & Direct Effects 
     ###########################################################
     n = 5000
-    p = 0.06    # treatment probability
+    p = 0.05    # treatment probability
     diag = 1   # maximum norm of direct effect
 
     results = []
