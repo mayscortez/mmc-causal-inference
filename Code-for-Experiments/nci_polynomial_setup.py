@@ -254,7 +254,7 @@ def poly_regression_num(beta, y, A, z):
   count = 1
   treated_neighb = np.array(A.sum(axis=1)).flatten()-1
   for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+      X[:,count] = np.power(treated_neighb,i)
       X[:,count+1] = np.power(treated_neighb,i+1)
       count += 2
   TTE_hat = np.sum((X @ v) - v[0])/n
