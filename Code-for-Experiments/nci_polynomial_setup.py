@@ -229,13 +229,17 @@ def poly_regression_prop(beta, y, A, z):
   '''
   n = A.shape[0]
 
-  X = np.ones((n,2*beta+1))
-  count = 1
-  treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
-  for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
-      X[:,count+1] = np.power(treated_neighb,i+1)
-      count += 2
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
 
   v = np.linalg.lstsq(X,y,rcond=None)[0]
   return np.sum(v)-v[0]
@@ -269,25 +273,33 @@ def poly_regression_num(beta, y, A, z):
   '''
   n = A.shape[0]
 
-  X = np.ones((n,2*beta+1))
-  count = 1
-  treated_neighb = (A.dot(z)-z)
-  for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
-      X[:,count+1] = np.power(treated_neighb,i+1)
-      count += 2
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
 
   # least squares regression
   v = np.linalg.lstsq(X,y,rcond=None)[0]
 
-  # Estimate TTE
-  count = 1
-  treated_neighb = np.array(A.sum(axis=1)).flatten()-1
-  for i in range(beta):
-      X[:,count] = np.power(treated_neighb,i)
-      X[:,count+1] = np.power(treated_neighb,i+1)
-      count += 2
-  TTE_hat = np.sum((X @ v) - v[0])/n
+  if beta == 0:
+      TTE_hat = v[1]
+  else:
+      # Estimate TTE
+      count = 1
+      treated_neighb = np.array(A.sum(axis=1)).flatten()-1
+      for i in range(beta):
+          X[:,count] = np.power(treated_neighb,i)
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
+      TTE_hat = np.sum((X @ v) - v[0])/n
+      
   return TTE_hat
 
 def poly_regression_num_cy(beta, y, A, z):
