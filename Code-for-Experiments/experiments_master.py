@@ -148,7 +148,8 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
         estimators = []
         estimators.append(lambda y,z: (1/(p*n))*np.sum(y - fy(np.zeros(n))))
         estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
-        estimators.append(lambda y,z: 1/(1-(1-p)**n) * np.sum(y - fy(np.zeros(n)))/np.sum(z))
+        estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
+        # estimators.append(lambda y,z: 1/(1-(1-p)**n) * np.sum(y - fy(np.zeros(n)))/np.sum(z))
         estimators.append(lambda y,z: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z: ncls.diff_in_means_fraction(n,y,A,z,0.75))
         estimators.append(lambda y,z: ncls.est_ols_gen(y,A,z))
@@ -156,7 +157,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
         alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75', 'OLS-Prop', 'OLS-Num']
 
-        bern_est = [0,1,2]
+        bern_est = [0,2]
         CRD_est = [1,3,4,5,6]
 
         for i in range(T):

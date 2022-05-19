@@ -17,7 +17,7 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
-save_path = 'outputFiles/save/'
+save_path = 'outputFiles/'
 save_path_graphs = 'graphs/'
 
 def main():
@@ -38,14 +38,14 @@ def main():
 
     results = []
 
-    for beta in range(5):
+    for beta in range(4):
         startTime2 = time.time()
 
         results.extend(run_experiment(G,T,n,p,r,graphStr,diag,beta))
 
         executionTime = (time.time() - startTime2)
-        print('Runtime (in seconds) for n = {} step: {}'.format(n,executionTime))
-        print('Runtime (in seconds) for n = {} step: {}'.format(n,executionTime),file=f)
+        print('Runtime (in seconds) for beta = {} step: {}'.format(beta,executionTime))
+        print('Runtime (in seconds) for beta = {} step: {}'.format(beta,executionTime),file=f)
 
     executionTime = (time.time() - startTime1)
     print('Runtime (size experiment) in minutes: {}\n'.format(executionTime/60))

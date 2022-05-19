@@ -13,9 +13,9 @@ save_path = 'outputFiles/Plots/'
 
 def main():
     graph = "CON" # configuration model with out-degrees distributed as power law
-    x_label = ['ratio', 'tp', 'size']
-    x_var = ['ratio', 'p', 'n']
-    model = ['linear']
+    x_label = ['ratio', 'tp', 'size']#['varying']
+    x_var = ['ratio', 'p', 'n']#['beta']
+    model = ['deg2','linear']#['deg']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b)
