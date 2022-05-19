@@ -16,7 +16,6 @@ a3 = 1   # for cubic effects
 a4 = 1   # for quartic effects
 
 # Define f(z)
-f_const = lambda z: alpha + a1*z
 f_linear = lambda alpha, z, gz: alpha + a1*z
 f_quadratic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz)
 f_cubic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3)
@@ -36,7 +35,7 @@ def ppom(beta, C, alpha):
   g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
 
   if beta == 0:
-      return f_const
+      return lambda z: alpha + a1*z
   elif beta == 1:
       f = f_linear
   elif beta == 2:
@@ -230,13 +229,17 @@ def poly_regression_prop(beta, y, A, z):
   '''
   n = A.shape[0]
 
-  X = np.ones((n,2*beta+1))
-  count = 1
-  treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
-  for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
-      X[:,count+1] = np.power(treated_neighb,i+1)
-      count += 2
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
 
   v = np.linalg.lstsq(X,y,rcond=None)[0]
   return np.sum(v)-v[0]
@@ -270,13 +273,17 @@ def poly_regression_num(beta, y, A, z):
   '''
   n = A.shape[0]
 
-  X = np.ones((n,2*beta+1))
-  count = 1
-  treated_neighb = (A.dot(z)-z)
-  for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
-      X[:,count+1] = np.power(treated_neighb,i+1)
-      count += 2
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
 
   # least squares regression
   v = np.linalg.lstsq(X,y,rcond=None)[0]

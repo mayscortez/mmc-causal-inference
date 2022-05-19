@@ -24,7 +24,7 @@ def main():
     G = 30          # number of graphs we want to average over
     T = 100          # number of trials per graph
     beta = 2
-    graphStr = "CON_new_"   # configuration model
+    graphStr = "CON"   # configuration model
 
     f = open(save_path+'experiments_output_deg'+str(beta)+'.txt', 'w')
 
