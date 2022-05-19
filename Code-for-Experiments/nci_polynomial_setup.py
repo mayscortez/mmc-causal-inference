@@ -289,6 +289,7 @@ def poly_regression_num(beta, y, A, z):
       X[:,count+1] = np.power(treated_neighb,i+1)
       count += 2
   TTE_hat = np.sum((X @ v) - v[0])/n
+  return TTE_hat
 
 def poly_regression_num_cy(beta, y, A, z):
   n = A.shape[0]
