@@ -8,17 +8,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-load_path = 'outputFiles/christina/'
-save_path = 'outputFiles/christina/'
+load_path = 'outputFiles/save/'
+save_path = 'outputFiles/Plots/'
 
 def main():
     graph = "CON" # configuration model with out-degrees distributed as power law
-    # x_label = ['ratio', 'tp', 'size']#['varying']
-    # x_var = ['ratio', 'p', 'n']#['beta']
-    # model = ['deg2','linear']#['deg']
-    x_label = ['varying']
-    x_var = ['beta']
-    model = ['deg']
+    x_label = ['ratio', 'tp', 'size']#['varying']
+    x_var = ['ratio', 'p', 'n']#['beta']
+    model = ['deg2','linear']#['deg']
+    # x_label = ['varying']
+    # x_var = ['beta']
+    #model = ['deg']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b)
