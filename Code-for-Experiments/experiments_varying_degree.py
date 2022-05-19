@@ -17,7 +17,7 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
-save_path = 'outputFiles/save/'
+save_path = 'outputFiles/christina/'
 save_path_graphs = 'graphs/'
 
 def main():
@@ -91,6 +91,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         estimators = []
         estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, L))
         estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
         estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_prop(beta, y, A, z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_num(beta, y, A, z))
         # estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_linear(n, K, sums))
@@ -98,10 +99,10 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
-        alg_names = ['Graph-Agnostic', 'Graph-AgnosticVR', 'LeastSqs-Prop', 'LeastSqs-Num','Diff-Means-Stnd', 'Diff-Means-Frac-0.75']#, 'Spline-Lin','Spline-Quad']
+        alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'LeastSqs-Prop', 'LeastSqs-Num', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75']#'Spline-Lin','Spline-Quad']
 
-        bern_est = [0,1,2]
-        CRD_est = [1,2,3,4,5]
+        bern_est = [0,2]
+        CRD_est = [1,3,4,5,6]
 
         # M represents number of measurements - 1 (not including 0), which we assume to be beta
         M = max(1,beta)
