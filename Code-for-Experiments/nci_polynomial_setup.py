@@ -31,7 +31,7 @@ def ppom(beta, C, alpha):
   alpha (np.array): vector of null effects
   '''
   n = C.shape[0]
-  assert np.all(f(alpha, np.zeros(n), np.zeros(n)) == alpha), 'f(0) should equal alpha'
+  # assert np.all(f(alpha, np.zeros(n), np.zeros(n)) == alpha), 'f(0) should equal alpha'
   #assert np.all(np.around(f(alpha, np.ones(n)) - alpha - np.ones(n), 10) >= 0), 'f must include linear component'
   g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
 
