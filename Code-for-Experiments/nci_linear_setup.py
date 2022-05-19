@@ -712,6 +712,71 @@ def est_ols_treated(y, A, z):
     v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
     return v[1]+(v[2]*(np.sum(A)-n)/n)
 
+def est_ols_cy(n, p, y, A, z):
+    '''
+    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
+    Uses numpy.linalg.solve and normal equations
+
+    n (int): number of individuals
+    p (float): treatment probability
+    y (numpy array): observed outcomes
+    A (square numpy array): network adjacency matrix
+    z (numpy array): treatment vector
+    '''
+
+    M = np.ones((n,4))
+    treated_neighb = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
+    M[:,0] = z
+    M[:,1] = z * treated_neighb
+    M[:,2] = 1-z 
+    M[:,3] = (1-z) * treated_neighb
+
+    v = np.linalg.solve(M.T.dot(M),M.T.dot(y))
+    return v[0]+v[1]
+
+def est_ols_gen_cy(y, A, z):
+    '''
+    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
+    Uses numpy.linalg.lstsq without the use of the normal equations
+
+    y (numpy array): observed outcomes
+    A (square numpy array): network adjacency matrix
+    z (numpy array): treatment vector
+    '''
+
+    n = A.shape[0]
+    X = np.ones((n,4))
+    treated_neighb = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
+    X[:,0] = z
+    X[:,1] = z * treated_neighb
+    X[:,2] = 1-z 
+    X[:,3] = (1-z) * treated_neighb
+
+    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
+    return v[0]+v[1]
+
+def est_ols_treated_cy(y, A, z):
+    '''
+    Returns an estimate of the TTE using OLS (regresses over number neighbors treated)
+    Uses numpy.linalg.lstsq without the use of the normal equations
+
+    y (numpy array): observed outcomes
+    A (square numpy array): network adjacency matrix
+    z (numpy array): treatment vector
+    '''
+
+    n = A.shape[0]
+    X = np.ones((n,4))
+    treated_neighb = (A.dot(z) - z)
+    X[:,0] = z
+    X[:,1] = z * treated_neighb
+    X[:,2] = 1-z 
+    X[:,3] = (1-z) * treated_neighb
+
+    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
+    return v[0]+(v[1]*(np.sum(A)-n)/n)
+
+
 def diff_in_means_naive(y, z):
     '''
     Returns an estimate of the TTE using difference in means

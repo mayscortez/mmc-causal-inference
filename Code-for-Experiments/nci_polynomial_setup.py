@@ -16,13 +16,13 @@ a3 = 1   # for cubic effects
 a4 = 1   # for quartic effects
 
 # Define f(z)
-f_const = lambda alpha, z, gz: alpha
+f_const = lambda z: alpha + a1*z
 f_linear = lambda alpha, z, gz: alpha + a1*z
 f_quadratic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz)
 f_cubic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3)
 f_quartic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3) + a4*np.power(gz,4)
 
-def ppom(f, C, alpha):
+def ppom(beta, C, alpha):
   '''
   Returns k-degree polynomial potential outcomes function fy
   
@@ -34,6 +34,20 @@ def ppom(f, C, alpha):
   assert np.all(f(alpha, np.zeros(n), np.zeros(n)) == alpha), 'f(0) should equal alpha'
   #assert np.all(np.around(f(alpha, np.ones(n)) - alpha - np.ones(n), 10) >= 0), 'f must include linear component'
   g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
+
+  if beta == 0:
+      return f_const
+  elif beta == 1:
+      f = f_linear
+  elif beta == 2:
+      f = f_quadratic
+  elif beta == 3:
+      f = f_cubic
+  elif beta == 4:
+      f = f_quadratic
+  else:
+      print("ERROR: invalid degree")
+
   return lambda z: f(alpha, C.dot(z), g(z)) 
 
 def staggered_rollout_bern(n, P):
@@ -227,6 +241,23 @@ def poly_regression_prop(beta, y, A, z):
   v = np.linalg.lstsq(X,y,rcond=None)[0]
   return np.sum(v)-v[0]
 
+def poly_regression_prop_cy(beta, y, A, z):
+  n = A.shape[0]
+  X = np.ones((n,2*beta+2))
+  z = z.reshape((n,1))
+  treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
+  # temp = 1
+  # for i in range(beta+1):
+  #     X[:,i] = np.multiply(z,temp)
+  #     X[:,beta+1+i] = np.multiply(1-z,temp)
+  #     temp = temp * treated_neighb
+  treated_neighb = np.power(treated_neighb.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
+  X[:,:beta+1] = z.dot(treated_neighb)
+  X[:,beta+1:] = (1-z).dot(treated_neighb)
+
+  v = np.linalg.lstsq(X,y,rcond=None)[0]
+  return np.sum(v[:beta+1])-v[beta+1]
+
 def poly_regression_num(beta, y, A, z):
   '''
   Returns an estimate of the TTE using polynomial regression using
@@ -254,10 +285,39 @@ def poly_regression_num(beta, y, A, z):
   count = 1
   treated_neighb = np.array(A.sum(axis=1)).flatten()-1
   for i in range(beta):
-      X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+      X[:,count] = np.power(treated_neighb,i)
       X[:,count+1] = np.power(treated_neighb,i+1)
       count += 2
   TTE_hat = np.sum((X @ v) - v[0])/n
+
+def poly_regression_num_cy(beta, y, A, z):
+  n = A.shape[0]
+
+  X = np.ones((n,2*beta+2))
+  z = z.reshape((n,1))
+  treated_neighb = (A.dot(z)-z)
+  # temp = 1
+  # for i in range(beta+1):
+  #     X[:,i] = np.multiply(z,temp)
+  #     X[:,beta+1+i] = np.multiply(1-z,temp)
+  #     temp = temp * treated_neighb
+  treated_neighb = np.power(treated_neighb.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
+  X[:,:beta+1] = z.dot(treated_neighb)
+  X[:,beta+1:] = (1-z).dot(treated_neighb)
+
+  # least squares regression
+  v = np.linalg.lstsq(X,y,rcond=None)[0]
+
+  # Estimate TTE
+  X = np.zeros((n,2*beta+2))
+  deg = np.array(A.sum(axis=1)).flatten()-1
+  # temp = 1
+  # for i in range(beta+1):
+  #     X[:,i] = temp
+  #     temp = temp * deg
+  X[:,:beta+1] = np.power(deg.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
+  TTE_hat = np.sum((X @ v) - v[beta+1])/n
+
   
   return TTE_hat
 

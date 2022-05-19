@@ -17,14 +17,14 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
-save_path = 'outputFiles/'
+save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
     G = 30          # number of graphs we want to average over
     T = 100          # number of trials per graph
     beta = 2
-    graphStr = "CON"   # configuration model
+    graphStr = "CON_new_"   # configuration model
 
     f = open(save_path+'experiments_output_deg'+str(beta)+'.txt', 'w')
 
@@ -90,7 +90,7 @@ def main():
     diag = 1   # maximum norm of direct effect
 
     results = []
-    ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
+    ratio = [0.01, 0.1, 0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 
     for r in ratio:
         print('ratio: {}'.format(r))
@@ -139,14 +139,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        if beta == 2:
-            fy = ncps.ppom(ncps.f_quadratic, C, alpha)
-        elif beta == 3:
-            fy = ncps.ppom(ncps.f_cubic, C, alpha)
-        elif beta == 4:
-            fy = ncps.ppom(ncps.f_quadratic, C, alpha)
-        else:
-            print("ERROR: invalid degree")
+        fy = ncps.ppom(beta, C, alpha)
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))

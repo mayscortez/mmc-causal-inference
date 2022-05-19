@@ -17,7 +17,7 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
-save_path = 'outputFiles/'
+save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
@@ -80,22 +80,11 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        if beta == 0:
-            fy = ncps.ppom(ncps.f_const, C, alpha)
-        elif beta == 1:
-            fy = ncps.ppom(ncps.f_linear, C, alpha)
-        elif beta == 2:
-            fy = ncps.ppom(ncps.f_quadratic, C, alpha)
-        elif beta == 3:
-            fy = ncps.ppom(ncps.f_cubic, C, alpha)
-        elif beta == 4:
-            fy = ncps.ppom(ncps.f_quadratic, C, alpha)
-        else:
-            print("ERROR: invalid degree")
+        fy = ncps.ppom(beta, C, alpha)
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
-        dict_base.update({'TTE': TTE})
+        #dict_base.update({'TTE': TTE})
         # print("Ground-Truth TTE: {}".format(TTE))
 
         ####### Estimate ########
@@ -131,7 +120,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
 
             for ind in range(len(CRD_est)):
                 est = estimators[CRD_est[ind]](y,z,sums,L,K/n,L)
-                dict_base.update({'Estimator': alg_names[CRD_est[ind]], 'Bias': (est-TTE)})
+                dict_base.update({'Estimator': alg_names[CRD_est[ind]], 'Bias': (est-TTE)/TTE})
                 results.append(dict_base.copy())
 
             dict_base.update({'Rand': 'Bernoulli'})
@@ -144,7 +133,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
             
             for ind in range(len(bern_est)):
                 est = estimators[bern_est[ind]](y,z,sums,H,P,Lr)
-                dict_base.update({'Estimator': alg_names[bern_est[ind]], 'Bias': (est-TTE)})
+                dict_base.update({'Estimator': alg_names[bern_est[ind]], 'Bias': (est-TTE)/TTE})
                 results.append(dict_base.copy())
 
     return results

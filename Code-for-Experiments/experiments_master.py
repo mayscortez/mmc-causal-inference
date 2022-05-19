@@ -17,7 +17,7 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
-save_path = 'outputFiles/'
+save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
@@ -89,7 +89,7 @@ def main():
     diag = 1   # maximum norm of direct effect
 
     results = []
-    ratio = [0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
+    ratio = [0.01, 0.1, 0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
 
     for r in ratio:
         print('ratio: {}'.format(r))

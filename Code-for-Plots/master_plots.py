@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-load_path = 'outputFiles/'
-save_path = 'outputFiles/Plots/'
+load_path = 'outputFiles/save/'
+save_path = 'outputFiles/save/'
 
 def main():
     graph = "CON" # configuration model with out-degrees distributed as power law
@@ -33,6 +33,7 @@ def plot(graph,x_var,x_label,model):
     ax = fig.add_subplot(111)
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=df, ci='sd', legend='brief', markers=True)
+    ax.set_ylim(-1,1)
     ax.set_xlabel(x_var, fontsize = 12)
     ax.set_ylabel("Relative Bias", fontsize = 12)
     ax.set_title('Performance of Estimator', fontsize=16)
