@@ -16,6 +16,7 @@ a3 = 1   # for cubic effects
 a4 = 1   # for quartic effects
 
 # Define f(z)
+f_const = lambda alpha, z, gz: alpha
 f_linear = lambda alpha, z, gz: alpha + a1*z
 f_quadratic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz)
 f_cubic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3)
