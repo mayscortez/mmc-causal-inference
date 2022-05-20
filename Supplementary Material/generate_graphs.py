@@ -3,7 +3,6 @@ Script to generate random graphs for different values of n
 '''
 # Setup
 import numpy as np
-import random
 import networkx as nx
 from math import log, ceil
 import sys
