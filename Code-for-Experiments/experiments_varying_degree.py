@@ -38,7 +38,7 @@ def main():
 
     results = []
 
-    for beta in range(4):
+    for beta in range(5):
         startTime2 = time.time()
 
         results.extend(run_experiment(G,T,n,p,r,graphStr,diag,beta))

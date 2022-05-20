@@ -7,7 +7,7 @@ from math import log, ceil
 import pandas as pd
 import seaborn as sns
 import nci_linear_setup as ncls
-from scipy import interpolate
+from scipy import interpolate, special
 
 # Scale down the effects of higher order terms
 a1 = 1      # for linear effects
@@ -29,25 +29,26 @@ def ppom(beta, C, alpha):
   C (np.array): weighted adjacency matrix
   alpha (np.array): vector of null effects
   '''
-  n = C.shape[0]
+  # n = C.shape[0]
   # assert np.all(f(alpha, np.zeros(n), np.zeros(n)) == alpha), 'f(0) should equal alpha'
   #assert np.all(np.around(f(alpha, np.ones(n)) - alpha - np.ones(n), 10) >= 0), 'f must include linear component'
-  g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
 
   if beta == 0:
       return lambda z: alpha + a1*z
   elif beta == 1:
       f = f_linear
-  elif beta == 2:
-      f = f_quadratic
-  elif beta == 3:
-      f = f_cubic
-  elif beta == 4:
-      f = f_quadratic
+      return lambda z: alpha + a1*C.dot(z)
   else:
-      print("ERROR: invalid degree")
-
-  return lambda z: f(alpha, C.dot(z), g(z)) 
+      g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
+      if beta == 2:
+          f = f_quadratic
+      elif beta == 3:
+          f = f_cubic
+      elif beta == 4:
+          f = f_quartic
+      else:
+          print("ERROR: invalid degree")
+      return lambda z: f(alpha, C.dot(z), g(z)) 
 
 def staggered_rollout_bern(n, P):
   '''
@@ -329,3 +330,19 @@ def poly_regression_num_cy(beta, y, A, z):
   
   return TTE_hat
 
+def graph_aware_estimator(n, p, y, A, z, beta):
+  # n = z.size
+  # z = z.reshape((n,1))
+  treated_neighb = A.dot(z)
+  control_neighb = A.dot(1-z)
+  est = 0
+  for i in range(n):
+    w = 0
+    a_lim = min(beta,treated_neighb[i])
+    for a in range(a_lim+1):
+      b_lim = min(beta - a,control_neighb[i])
+      for b in range(b_lim+1):
+        w = w + ((1-p)**(a+b) - (-p)**(a+b)) * p**(-a) * (p-1)**(-b) * special.binom(treated_neighb[i],a)  * special.binom(control_neighb[i],b)
+    est = est + y[i]*w
+
+  return est/n

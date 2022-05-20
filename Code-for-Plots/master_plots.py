@@ -21,11 +21,20 @@ def main():
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
     x_plot = ['$r$', '$k/n$', '$n$']
-    model = ['linear','deg2']
+    model = ['linear']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
-
+    
+        
+    title = ['$\\beta=2, n=5000, k/n=0.5$','$\\beta=2, n=5000, r=1.25$','$\\beta=2, k/n=0.5, r=1.25$']
+    x_label = ['ratio', 'tp', 'size']
+    x_var = ['ratio', 'p', 'n']
+    x_plot = ['$r$', '$k/n$', '$n$']
+    model = ['deg2']
+    for b in model:
+        for ind in range(len(x_var)):
+            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
     
     title = ['$n=15000, k/n=0.5, r=1.25$']
     x_label = ['varying']
@@ -34,7 +43,8 @@ def main():
     model = ['deg']
     for b in model:
         for ind in range(len(x_var)):
-            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],True)
+            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
+
 
 def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     # CRD_est = ['$\text{PI}(k/n)$', '$\text{DM}$', '$\text{DM}(0.75)$', '$\text{LS-Prop}$', '$\text{LS-Num}$']
@@ -53,6 +63,9 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     else:
         df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'LeastSqs-Prop':CRD_est[3],'LeastSqs-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
         #df.rename(columns={'Graph-Agnostic-p':'PI(p)', 'Graph-Agnostic-num':'PI(k/n)', 'Graph-AgnosticVR': 'PI(kHat/n)', 'LeastSqs-Prop':'LS-Prop','LeastSqs-Num':'LS-Num','Diff-Means-Stnd': 'DM', 'Diff-Means-Frac-0.75':'DM(0.75)'})
+
+    if experiment == '-varying-deg':
+        df = df.loc[df['beta'].isin([0,1,2,3])]
 
     plt.rc('text', usetex=True)
     
