@@ -6,7 +6,7 @@ import networkx as nx
 from math import log, ceil
 import pandas as pd
 import seaborn as sns
-import nci_linear_setup as ncls
+import setup as ncls
 from scipy import interpolate
 
 # Scale down the effects of higher order terms

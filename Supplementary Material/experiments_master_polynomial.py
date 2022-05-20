@@ -12,7 +12,7 @@ import seaborn as sns
 import sys
 import time
 import scipy.sparse
-import nci_linear_setup as ncls
+import setup as ncls
 import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'

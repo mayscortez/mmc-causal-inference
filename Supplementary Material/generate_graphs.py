@@ -13,7 +13,7 @@ import scipy.sparse
 path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
-import nci_linear_setup as ncls
+import setup as ncls
 import nci_polynomial_setup as ncps
 
 save_path = 'graphs/'
