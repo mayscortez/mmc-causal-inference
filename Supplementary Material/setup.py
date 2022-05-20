@@ -472,97 +472,6 @@ def poly_regression_num(beta, y, A, z):
   TTE_hat = np.sum((X @ v) - v[0])/n
   return TTE_hat
 
-def est_ols_gen_cy(y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
-    Uses numpy.linalg.lstsq without the use of the normal equations
-
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
-
-    n = A.shape[0]
-    X = np.ones((n,4))
-    treated_neighb = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
-    X[:,0] = z
-    X[:,1] = z * treated_neighb
-    X[:,2] = 1-z 
-    X[:,3] = (1-z) * treated_neighb
-
-    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
-    return v[0]+v[1]
-
-def poly_regression_prop_cy(beta, y, A, z):
-  n = A.shape[0]
-  X = np.ones((n,2*beta+2))
-  z = z.reshape((n,1))
-  treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
-  # temp = 1
-  # for i in range(beta+1):
-  #     X[:,i] = np.multiply(z,temp)
-  #     X[:,beta+1+i] = np.multiply(1-z,temp)
-  #     temp = temp * treated_neighb
-  treated_neighb = np.power(treated_neighb.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
-  X[:,:beta+1] = z.dot(treated_neighb)
-  X[:,beta+1:] = (1-z).dot(treated_neighb)
-
-  v = np.linalg.lstsq(X,y,rcond=None)[0]
-  return np.sum(v[:beta+1])-v[beta+1]
-
-def est_ols_treated_cy(y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over number neighbors treated)
-    Uses numpy.linalg.lstsq without the use of the normal equations
-
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
-
-    n = A.shape[0]
-    X = np.ones((n,4))
-    treated_neighb = (A.dot(z) - z)
-    X[:,0] = z
-    X[:,1] = z * treated_neighb
-    X[:,2] = 1-z 
-    X[:,3] = (1-z) * treated_neighb
-
-    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
-    return v[0]+(v[1]*(np.sum(A)-n)/n)
-
-def poly_regression_num_cy(beta, y, A, z):
-  n = A.shape[0]
-
-  X = np.ones((n,2*beta+2))
-  z = z.reshape((n,1))
-  treated_neighb = (A.dot(z)-z)
-  # temp = 1
-  # for i in range(beta+1):
-  #     X[:,i] = np.multiply(z,temp)
-  #     X[:,beta+1+i] = np.multiply(1-z,temp)
-  #     temp = temp * treated_neighb
-  treated_neighb = np.power(treated_neighb.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
-  X[:,:beta+1] = z.dot(treated_neighb)
-  X[:,beta+1:] = (1-z).dot(treated_neighb)
-
-  # least squares regression
-  v = np.linalg.lstsq(X,y,rcond=None)[0]
-
-  # Estimate TTE
-  X = np.zeros((n,2*beta+2))
-  deg = np.array(A.sum(axis=1)).flatten()-1
-  # temp = 1
-  # for i in range(beta+1):
-  #     X[:,i] = temp
-  #     temp = temp * deg
-  X[:,:beta+1] = np.power(deg.reshape((n,1)), np.arange(beta+1).reshape((1,beta+1)))
-  TTE_hat = np.sum((X @ v) - v[beta+1])/n
-
-  
-  return TTE_hat
-
-
 ###### Difference in Means ######
 def diff_in_means_naive(y, z):
     '''
@@ -628,6 +537,7 @@ def poly_interp_linear(n, P, sums):
   f_spl = interpolate.interp1d(P, sums, kind='slinear', fill_value='extrapolate')
   TTE_hat2 = (1/n)*(f_spl(1) - f_spl(0))
   return TTE_hat2
+
 ########################################
 # To save graphs to be C++ compatible
 ########################################

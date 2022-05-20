@@ -13,7 +13,6 @@ import sys
 import time
 import scipy.sparse
 import setup as ncls
-import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
@@ -80,7 +79,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        fy = ncps.ppom(beta, C, alpha)
+        fy = ncls.ppom(beta, C, alpha)
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
@@ -89,13 +88,13 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
 
         ####### Estimate ########
         estimators = []
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, L))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_prop(beta, y, A, z))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_num(beta, y, A, z))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_linear(n, K, sums))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_splines(n, K, sums, 'quadratic'))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, L))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_prop(beta, y, A, z))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_num(beta, y, A, z))
+        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_linear(n, K, sums))
+        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_splines(n, K, sums, 'quadratic'))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
@@ -107,17 +106,17 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         # M represents number of measurements - 1 (not including 0), which we assume to be beta
         M = max(1,beta)
 
-        K = ncps.seq_treated(M,p,n)            # sequence of treated for CRD + staggered rollout
-        L = ncps.complete_coeffs(n, K)    # coefficents for GASR estimator under CRD
-        P = ncps.seq_treatment_probs(M,p)    # sequence of probabilities for bern staggered rollout RD
-        H = ncps.bern_coeffs(P)            # coefficents for GASR estimator under Bernoulli design
+        K = ncls.seq_treated(M,p,n)            # sequence of treated for CRD + staggered rollout
+        L = ncls.complete_coeffs(n, K)    # coefficents for GASR estimator under CRD
+        P = ncls.seq_treatment_probs(M,p)    # sequence of probabilities for bern staggered rollout RD
+        H = ncls.bern_coeffs(P)            # coefficents for GASR estimator under Bernoulli design
         
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})
-            Z = ncps.staggered_rollout_complete(n, K)
+            Z = ncls.staggered_rollout_complete(n, K)
             z = Z[M,:]
             y = fy(z)
-            sums = ncps.outcome_sums(fy, Z)
+            sums = ncls.outcome_sums(fy, Z)
 
             for ind in range(len(CRD_est)):
                 est = estimators[CRD_est[ind]](y,z,sums,L,K/n,L)
@@ -125,12 +124,12 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
                 results.append(dict_base.copy())
 
             dict_base.update({'Rand': 'Bernoulli'})
-            Z = ncps.staggered_rollout_bern(n, P)
+            Z = ncls.staggered_rollout_bern(n, P)
             z = Z[M,:]
             y = fy(z)
-            sums = ncps.outcome_sums(fy, Z)
+            sums = ncls.outcome_sums(fy, Z)
             Kr = np.sum(Z,1) # realized number of people treated at each time step
-            Lr = ncps.complete_coeffs(n, Kr) # coeffs for variance reduction
+            Lr = ncls.complete_coeffs(n, Kr) # coeffs for variance reduction
             
             for ind in range(len(bern_est)):
                 est = estimators[bern_est[ind]](y,z,sums,H,P,Lr)

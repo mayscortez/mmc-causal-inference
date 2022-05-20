@@ -14,7 +14,6 @@ path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
 
 import setup as ncls
-import nci_polynomial_setup as ncps
 
 save_path = 'graphs/'
 save_path_graphs = 'graphs/'
