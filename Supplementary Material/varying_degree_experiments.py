@@ -1,5 +1,5 @@
 '''
-Experiments: polynomial setting
+Experiments: varying degree of potential outcomes model
 '''
 
 # Setup
@@ -17,9 +17,9 @@ save_path = 'New-Data/'
 save_path_graphs = 'Graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
-    graphStr = "CON"   # configuration model
+    G = 30            # number of graphs we want to average over
+    T = 100           # number of trials per graph
+    graphStr = "CON"  # configuration model
 
     f = open(save_path+'experiments_output_varying_deg.txt', 'w')
 
@@ -27,10 +27,10 @@ def main():
     # Run Experiment: Varying Size of Network
     ###########################################
     startTime1 = time.time()
-    r = 1.25
-    p = 0.5        # treatment probability
-    n = 15000
-    diag=1
+    r = 1.25       # ratio between indirect and direct effects
+    p = 0.5        # treatment budget
+    n = 15000      # size of population/network
+    diag = 1       # maximum norm of the direct effects
 
     results = []
 
@@ -52,7 +52,17 @@ def main():
     sys.stdout.close()
 
 def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
-    
+    '''
+    G (int): Number of graphs to average over
+    T (int): Number of trials to average over
+    n (int): Size of network (number of nodes)
+    p (float): treatment budget
+    r (float): ration between indirect and direct effects
+    graphStr (str): type of graph e.g. "ER" for erdos renyi
+    diag (float): maximum norm of the direct effects
+    beta (int): degree of the polynomial potential outcomes model
+    loadGraphs (bool): if set to True, uses pre-saved graphs
+    '''
     offdiag = r*diag   # maximum norm of indirect effect
 
     results = []
@@ -90,8 +100,6 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_prop(beta, y, A, z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_num(beta, y, A, z))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_linear(n, K, sums))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_splines(n, K, sums, 'quadratic'))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
@@ -104,9 +112,9 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         M = max(1,beta)
 
         K = ncls.seq_treated(M,p,n)            # sequence of treated for CRD + staggered rollout
-        L = ncls.complete_coeffs(n, K)    # coefficents for GASR estimator under CRD
-        P = ncls.seq_treatment_probs(M,p)    # sequence of probabilities for bern staggered rollout RD
-        H = ncls.bern_coeffs(P)            # coefficents for GASR estimator under Bernoulli design
+        L = ncls.complete_coeffs(n, K)         # coefficents for GASR estimator under CRD
+        P = ncls.seq_treatment_probs(M,p)      # sequence of probabilities for bern staggered rollout RD
+        H = ncls.bern_coeffs(P)                # coefficents for GASR estimator under Bernoulli design
         
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})

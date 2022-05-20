@@ -1,5 +1,10 @@
 '''
 Experiments: polynomial setting
+
+Runs three experiments and saves the results
+- Experiment 1: varying size of the network
+- Experiment 2: varying treatment budget
+- Experiment 3: varying ratio between indirect and direct effects
 '''
 
 # Setup
@@ -17,10 +22,10 @@ save_path = 'New-Data/'
 save_path_graphs = 'Graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
-    beta = 2
-    graphStr = "CON"   # configuration model
+    G = 30              # number of graphs we want to average over
+    T = 100             # number of trials per graph
+    beta = 2            # degree of potential outcomes model
+    graphStr = "CON"    # configuration model
 
     f = open(save_path+'experiments_output_deg'+str(beta)+'.txt', 'w')
 
@@ -30,7 +35,7 @@ def main():
     startTime1 = time.time()
     diag = 1        # controls magnitude of direct effects
     r = 1.25        # ratio between indirect and direct effects
-    p = 0.5        # treatment probability
+    p = 0.5         # treatment probability
 
     results = []
     sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
@@ -56,7 +61,7 @@ def main():
     ################################################
     startTime2 = time.time()
     n = 5000        # number of nodes in network
-    diag = 1     # maximum norm of direct effect
+    diag = 1        # maximum norm of direct effect
     r = 1.25        # ratio between indirect and direct effects
 
     results = []
@@ -111,7 +116,17 @@ def main():
     sys.stdout.close()
 
 def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
-    
+    '''
+    G (int): Number of graphs to average over
+    T (int): Number of trials to average over
+    n (int): Size of network (number of nodes)
+    p (float): treatment budget
+    r (float): ration between indirect and direct effects
+    graphStr (str): type of graph e.g. "ER" for erdos renyi
+    diag (float): maximum norm of the direct effects
+    beta (int): degree of the polynomial potential outcomes model
+    loadGraphs (bool): if set to True, uses pre-saved graphs
+    '''
     offdiag = r*diag   # maximum norm of indirect effect
 
     results = []
@@ -148,8 +163,6 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_prop(beta, y, A, z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_num(beta, y, A, z))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_linear(n, K, sums))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_interp_splines(n, K, sums, 'quadratic'))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
@@ -158,13 +171,17 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         bern_est = [0,2]
         CRD_est = [1,3,4,5,6]
 
+        # Compare against Bernoulli Randomized Design
+        #bern_est = [0,2,3,4,5,6]
+        #CRD_est = [1] 
+
         # M represents number of measurements - 1 (not including 0), which we assume to be beta
         M = beta
 
-        K = ncls.seq_treated(M,p,n)            # sequence of treated for CRD + staggered rollout
-        L = ncls.complete_coeffs(n, K)    # coefficents for GASR estimator under CRD
-        P = ncls.seq_treatment_probs(M,p)    # sequence of probabilities for bern staggered rollout RD
-        H = ncls.bern_coeffs(P)            # coefficents for GASR estimator under Bernoulli design
+        K = ncls.seq_treated(M,p,n)         # sequence of treated for CRD + staggered rollout
+        L = ncls.complete_coeffs(n, K)      # coefficents for GASR estimator under CRD
+        P = ncls.seq_treatment_probs(M,p)   # sequence of probabilities for bern staggered rollout RD
+        H = ncls.bern_coeffs(P)             # coefficents for GASR estimator under Bernoulli design
         
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})

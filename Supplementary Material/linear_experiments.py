@@ -1,5 +1,10 @@
 '''
 Experiments: Linear setting
+
+Runs three experiments and saves the results
+- Experiment 1: varying size of the network
+- Experiment 2: varying treatment budget
+- Experiment 3: varying ratio between indirect and direct effects
 '''
 
 # Setup
@@ -17,8 +22,8 @@ save_path = 'New-Data/'
 save_path_graphs = 'Graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
+    G = 30             # number of graphs we want to average over
+    T = 100            # number of trials per graph
     graphStr = "CON"   # configuration model
 
     f = open(save_path+'experiments_output.txt', 'w')
@@ -27,8 +32,8 @@ def main():
     # Run Experiment: Varying Size of Network
     ###########################################
     startTime1 = time.time()
-    diag = 1     # maximum norm of direct effect
-    r = 1.25    # ratio between indirect and direct effects
+    diag = 1        # maximum norm of direct effect
+    r = 1.25        # ratio between indirect and direct effects
     p = 0.05        # treatment probability
 
     results = []
@@ -55,8 +60,8 @@ def main():
     ################################################
     startTime2 = time.time()
     n = 5000        # number of nodes in network
-    diag = 1     # maximum norm of direct effect
-    r = 1.25    # ratio between indirect and direct effects
+    diag = 1        # maximum norm of direct effect
+    r = 1.25        # ratio between indirect and direct effects
 
     results = []
     p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
@@ -81,8 +86,8 @@ def main():
     # Run Experiment: Varying Ratio of Indirect & Direct Effects 
     ###########################################################
     n = 5000
-    p = 0.05    # treatment probability
-    diag = 1   # maximum norm of direct effect
+    p = 0.05       # treatment probability
+    diag = 1       # maximum norm of direct effect
 
     results = []
     ratio = [0.01, 0.1, 0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]
@@ -110,8 +115,17 @@ def main():
     sys.stdout.close()
 
 def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
-    
-    offdiag = r*diag   # maximum norm of indirect effect
+    '''
+    G (int): Number of graphs to average over
+    T (int): Number of trials to average over
+    n (int): Size of network (number of nodes)
+    p (float): treatment budget
+    r (float): ration between indirect and direct effects
+    graphStr (str): type of graph e.g. "ER" for erdos renyi
+    diag (float): maximum norm of the direct effects
+    loadGraphs (bool): if set to True, uses pre-saved graphs
+    '''
+    offdiag = r*diag   # maximum norm of indirect effects
 
     results = []
     dict_base = {'p': p, 'ratio': r, 'n': n}
@@ -145,7 +159,6 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
         estimators.append(lambda y,z: (1/(p*n))*np.sum(y - fy(np.zeros(n))))
         estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
         estimators.append(lambda y,z: (1/np.sum(z))*np.sum(y - fy(np.zeros(n))))
-        # estimators.append(lambda y,z: 1/(1-(1-p)**n) * np.sum(y - fy(np.zeros(n)))/np.sum(z))
         estimators.append(lambda y,z: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z: ncls.diff_in_means_fraction(n,y,A,z,0.75))
         estimators.append(lambda y,z: ncls.est_ols_gen(y,A,z))
@@ -153,8 +166,13 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
         alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75', 'OLS-Prop', 'OLS-Num']
 
-        bern_est = [0,2]
-        CRD_est = [1,3,4,5,6]
+        # Compare against Complete Randomized Design
+        #bern_est = [0,2]
+        #CRD_est = [1,3,4,5,6]
+
+        # Compare against Bernoulli Randomized Design
+        bern_est = [0,2,3,4,5,6]
+        CRD_est = [1]        
 
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})

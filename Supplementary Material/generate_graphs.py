@@ -14,8 +14,8 @@ sys.path.append(path_to_module)
 
 import setup as ncls
 
-save_path = 'graphs/'
-save_path_graphs = 'graphs/'
+save_path = 'Graphs/'
+save_path_graphs = 'Graphs/'
 
 startTime = time.time()
 prevTime = startTime
@@ -39,21 +39,6 @@ for n in sizes:
         name = save_path_graphs + graph + sz + '-' + graph_rep + '-A'
         #ncls.printGraph(A, name, symmetric=False)
         scipy.sparse.save_npz(name,A)
-        
-        # # null effects
-        # alpha = np.random.rand(n)
-
-        # # weights from simple model
-        # C = ncls.simpleWeights(A, diag, offdiag)
-
-        # # # Generate normalized weights
-        # # C = ncls.weights_node_deg_unif(A)
-        # # C = C*A
-        # # C = ncls.normalized_weights(C, diag, offdiag)
-
-        # # Save weights
-        # name = save_path_graphs + graph + sz + '-' + graph_rep + '-C'
-        # ncls.printWeights(C, alpha, name)
         
         # random numbers to generate weights; each of three columns are for alpha, rand_diag, rand_offdiag
         rand_wts = np.random.rand(n,3)
