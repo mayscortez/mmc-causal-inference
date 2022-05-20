@@ -1,0 +1,35 @@
+Runtime (in seconds) for n = 1000 step: 5.397734880447388
+Runtime (in seconds) for n = 3000 step: 17.348239421844482
+Runtime (in seconds) for n = 5000 step: 28.000980138778687
+Runtime (in seconds) for n = 7000 step: 39.04088878631592
+Runtime (in seconds) for n = 9000 step: 48.673110246658325
+Runtime (in seconds) for n = 11000 step: 58.335811614990234
+Runtime (in seconds) for n = 13000 step: 67.99026036262512
+Runtime (in seconds) for n = 15000 step: 77.64566373825073
+Runtime (size experiment) in minutes: 5.7072395324707035
+
+Runtime (in seconds) for p = 0.03 step: 29.35000514984131
+Runtime (in seconds) for p = 0.06 step: 30.453234434127808
+Runtime (in seconds) for p = 0.09 step: 28.373534679412842
+Runtime (in seconds) for p = 0.12 step: 34.004690170288086
+Runtime (in seconds) for p = 0.15 step: 43.03628611564636
+Runtime (in seconds) for p = 0.2 step: 45.500017166137695
+Runtime (in seconds) for p = 0.25 step: 44.23012852668762
+Runtime (in seconds) for p = 0.3 step: 43.02400541305542
+Runtime (in seconds) for p = 0.4 step: 43.872085094451904
+Runtime (in seconds) for p = 0.5 step: 47.09191703796387
+Runtime (tp experiment) in minutes: 6.482739301522573
+
+Runtime (in seconds) for r = 0.01 step: 44.430840492248535
+Runtime (in seconds) for r = 0.1 step: 46.073153495788574
+Runtime (in seconds) for r = 0.25 step: 45.42933654785156
+Runtime (in seconds) for r = 0.5 step: 44.036771297454834
+Runtime (in seconds) for r = 0.75 step: 43.16594219207764
+Runtime (in seconds) for r = 1 step: 44.62271022796631
+Runtime (in seconds) for r = 1.3333333333333333 step: 43.75399398803711
+Runtime (in seconds) for r = 2.0 step: 44.75814747810364
+Runtime (in seconds) for r = 3 step: 44.12865471839905
+Runtime (in seconds) for r = 4.0 step: 44.54641032218933
+Runtime (ratio experiment) in minutes: 13.930061535040538
+
+Runtime (whole script) in hours: 0.32797325094540913
