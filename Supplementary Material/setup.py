@@ -10,10 +10,11 @@ from scipy import interpolate
 
 def erdos_renyi(n,p,undirected=False):
     '''
-    Generates a random network of n nodes using the Erdos-Renyi method,
-    where the probability that an edge exists between two nodes is p.
+    Returns adjacency matrix (numpy array) of a random network using the Erdos-Renyi method
 
-    Returns the adjacency matrix of the network as an n by n numpy array
+    n (int): size of network (number of nodes)
+    p (float): probability that an edge exists between two nodes
+    undirected (bool): default is False; if set to True, creates symmetric graph
     '''
     A = np.random.rand(n,n)
     A = (A < p) + 0
@@ -26,8 +27,10 @@ def config_model_nx(N, exp = 2.5, law = "out"):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
     model with power law degree sequences
+    See networkx generators.degree_seq.directed_configuration_model documentation for more info
 
     N (int): number of nodes
+    exp (float): exponent of the powerlaw distribution
     law (str): inicates whether in-, out- or both in- and out-degrees should be distributed as a power law
         "out" : out-degrees distributed as powerlaw, in-degrees sum up to same # as out-degrees
         "in" : in-degrees distributed as powerlaw, out-degrees sum up to same # as in-degrees
@@ -58,19 +61,19 @@ def powerlaw_degrees(N, exp=2.5):
     '''
     Returns out- and in-degree sequences distributed according to a powerlaw with exp
     The two sequences sum up to the same number
-    See networkx utils.powerlaw_sequence for more details
+    See networkx utils.powerlaw_sequence documentation for more details
 
     N (int): : number of nodes in graph
     exp (float): exponent in powerlaw distribution pdf
     '''
     S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
     out_sum = np.sum(S_out)
-    if (out_sum % 2 != 0):
+    if (out_sum % 2 != 0): # make sure the sum of out-degrees is even
         ind = np.random.randint(N)
         S_out[ind] += 1
     
     S_in = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
-    while (np.sum(S_in) != out_sum):
+    while (np.sum(S_in) != out_sum): # make sure both degree sequences have the same sum
         ind = np.random.randint(N)
         if (np.sum(S_in) > out_sum):
             S_in[ind] -= 1
@@ -96,6 +99,11 @@ def uniform_degrees(n,sum):
     return degs
 
 def symmetrizeGraph(A):
+    '''
+    Given a general adjacency matrix, returns a symmetric adjacency matrix 
+
+    A (numpy array): adjacency matrix of a network
+    '''
     n = A.shape[0]
     if A.shape[1] != n:
         print("Error: adjacency matrix is not square!")
@@ -108,7 +116,7 @@ def symmetrizeGraph(A):
 def small_world(n,k,p):
     '''
     Returns adjacency matrix (A, numpy array) of random network using the Watts-
-    Strogatz graph function in the networkx package.
+    Strogatz graph function in the networkx package
 
     n (int): number of nodes
     k (int): Each node is joined with its k nearest neighbors in a ring topology
@@ -142,11 +150,11 @@ def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.
     '''
     Returns weights generated from model described in Experiments Section
 
-    A (numpy array): adjacency matrix of the network
+    A (numpy array): n by n adjacency matrix of the network
     diag (float): maximum norm of direct effects
-    offidiag (float): maximum norm of the indirect effects
-    rand_diag (numpy array):
-    rand_offdiag (numpy arry):
+    offdiag (float): maximum norm of the indirect effects
+    rand_diag (numpy array): array of n numbers governing direct effects of each node
+    rand_offdiag (numpy arry): array of n numbers governing indirect effects of each node
     '''
     n = A.shape[0]
 
@@ -160,11 +168,6 @@ def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.
     col_sum[col_sum==0] = 1
     temp = scipy.sparse.diags(C_offdiag/col_sum)
     C = C.dot(temp)
-
-    # out_deg = np.array(A.sum(axis=0)).flatten() # array of the out-degree of each node
-    # out_deg[out_deg==0] = 1
-    # temp = scipy.sparse.diags(C_offdiag/out_deg)
-    # C = A.dot(temp)
 
     if rand_diag.size == 0:
         rand_diag = np.random.rand(n)
@@ -180,9 +183,9 @@ linear_pom = lambda C,alpha, z : C.dot(z) + alpha
 
 # Scale the effects of higher order terms
 a1 = 1      # for linear effects
-a2 = 1    # for quadratic effects
-a3 = 1   # for cubic effects
-a4 = 1   # for quartic effects
+a2 = 1      # for quadratic effects
+a3 = 1      # for cubic effects
+a4 = 1      # for quartic effects
 
 # Define f(z)
 f_linear = lambda alpha, z, gz: alpha + a1*z # should be equivalent to linear_pom
@@ -192,7 +195,7 @@ f_quartic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.po
 
 def ppom(beta, C, alpha):
   '''
-  Returns k-degree polynomial potential outcomes (POM) function fy
+  Returns k-degree polynomial potential outcomes (POM) function
   
   beta (int): degree of POM 
   C (np.array): weighted adjacency matrix
