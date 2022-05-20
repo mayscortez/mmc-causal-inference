@@ -1,10 +1,14 @@
 '''
 Experiments: polynomial setting
+
+Runs three experiments and saves the results
+- Experiment 1: varying size of the network
+- Experiment 2: varying treatment budget
+- Experiment 3: varying ratio between indirect and direct effects
 '''
 
 # Setup
 import numpy as np
-import random
 import networkx as nx
 from math import log, ceil
 import pandas as pd
@@ -12,19 +16,16 @@ import seaborn as sns
 import sys
 import time
 import scipy.sparse
-import nci_linear_setup as ncls
-import nci_polynomial_setup as ncps
+import setup as ncls
 
-path_to_module = 'Code-for-Experiments/'
-#sys.path.append(path_to_module)
-save_path = 'outputFiles/save/'
-save_path_graphs = 'graphs/'
+save_path = 'New-Data/'
+save_path_graphs = 'Graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
-    beta = 2
-    graphStr = "CON"   # configuration model
+    G = 30              # number of graphs we want to average over
+    T = 100             # number of trials per graph
+    beta = 2            # degree of potential outcomes model
+    graphStr = "CON"    # configuration model
 
     f = open(save_path+'experiments_output_deg'+str(beta)+'.txt', 'w')
 
@@ -34,7 +35,7 @@ def main():
     startTime1 = time.time()
     diag = 1        # controls magnitude of direct effects
     r = 1.25        # ratio between indirect and direct effects
-    p = 0.5        # treatment probability
+    p = 0.5         # treatment probability
 
     results = []
     sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
@@ -60,7 +61,7 @@ def main():
     ################################################
     startTime2 = time.time()
     n = 5000        # number of nodes in network
-    diag = 1     # maximum norm of direct effect
+    diag = 1        # maximum norm of direct effect
     r = 1.25        # ratio between indirect and direct effects
 
     results = []
@@ -115,7 +116,17 @@ def main():
     sys.stdout.close()
 
 def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
-    
+    '''
+    G (int): Number of graphs to average over
+    T (int): Number of trials to average over
+    n (int): Size of network (number of nodes)
+    p (float): treatment budget
+    r (float): ration between indirect and direct effects
+    graphStr (str): type of graph e.g. "ER" for erdos renyi
+    diag (float): maximum norm of the direct effects
+    beta (int): degree of the polynomial potential outcomes model
+    loadGraphs (bool): if set to True, uses pre-saved graphs
+    '''
     offdiag = r*diag   # maximum norm of indirect effect
 
     results = []
@@ -139,7 +150,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
         
         # potential outcomes model
-        fy = ncps.ppom(beta, C, alpha)
+        fy = ncls.ppom(beta, C, alpha)
 
         # compute and print true TTE
         TTE = 1/n * np.sum((fy(np.ones(n)) - fy(np.zeros(n))))
@@ -147,13 +158,11 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
 
         ####### Estimate ########
         estimators = []
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, L))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.graph_agnostic(n, sums, Lr))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_prop(beta, y, A, z))
-        estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_regression_num(beta, y, A, z))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_linear(n, K, sums))
-        # estimators.append(lambda y,z,sums,L,K,Lr: ncps.poly_interp_splines(n, K, sums, 'quadratic'))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, L))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.graph_agnostic(n, sums, Lr))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_prop(beta, y, A, z))
+        estimators.append(lambda y,z,sums,L,K,Lr: ncls.poly_regression_num(beta, y, A, z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z,sums,L,K,Lr: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
@@ -162,20 +171,24 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         bern_est = [0,2]
         CRD_est = [1,3,4,5,6]
 
+        # Compare against Bernoulli Randomized Design
+        #bern_est = [0,2,3,4,5,6]
+        #CRD_est = [1] 
+
         # M represents number of measurements - 1 (not including 0), which we assume to be beta
         M = beta
 
-        K = ncps.seq_treated(M,p,n)            # sequence of treated for CRD + staggered rollout
-        L = ncps.complete_coeffs(n, K)    # coefficents for GASR estimator under CRD
-        P = ncps.seq_treatment_probs(M,p)    # sequence of probabilities for bern staggered rollout RD
-        H = ncps.bern_coeffs(P)            # coefficents for GASR estimator under Bernoulli design
+        K = ncls.seq_treated(M,p,n)         # sequence of treated for CRD + staggered rollout
+        L = ncls.complete_coeffs(n, K)      # coefficents for GASR estimator under CRD
+        P = ncls.seq_treatment_probs(M,p)   # sequence of probabilities for bern staggered rollout RD
+        H = ncls.bern_coeffs(P)             # coefficents for GASR estimator under Bernoulli design
         
         for i in range(T):
             dict_base.update({'rep': i, 'Rand': 'CRD'})
-            Z = ncps.staggered_rollout_complete(n, K)
+            Z = ncls.staggered_rollout_complete(n, K)
             z = Z[M,:]
             y = fy(z)
-            sums = ncps.outcome_sums(fy, Z)
+            sums = ncls.outcome_sums(fy, Z)
 
             for ind in range(len(CRD_est)):
                 est = estimators[CRD_est[ind]](y,z,sums,L,K/n,L)
@@ -183,12 +196,12 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
                 results.append(dict_base.copy())
 
             dict_base.update({'Rand': 'Bernoulli'})
-            Z = ncps.staggered_rollout_bern(n, P)
+            Z = ncls.staggered_rollout_bern(n, P)
             z = Z[M,:]
             y = fy(z)
-            sums = ncps.outcome_sums(fy, Z)
+            sums = ncls.outcome_sums(fy, Z)
             Kr = np.sum(Z,1) # realized number of people treated at each time step
-            Lr = ncps.complete_coeffs(n, Kr) # coeffs for variance reduction
+            Lr = ncls.complete_coeffs(n, Kr) # coeffs for variance reduction
             
             for ind in range(len(bern_est)):
                 est = estimators[bern_est[ind]](y,z,sums,H,P,Lr)

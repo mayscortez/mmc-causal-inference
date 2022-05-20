@@ -2,6 +2,7 @@ import numpy as np
 import random
 import networkx as nx
 import scipy.sparse
+from scipy import interpolate
 
 ########################################
 # Functions to generate random networks
@@ -9,10 +10,11 @@ import scipy.sparse
 
 def erdos_renyi(n,p,undirected=False):
     '''
-    Generates a random network of n nodes using the Erdos-Renyi method,
-    where the probability that an edge exists between two nodes is p.
+    Returns adjacency matrix (numpy array) of a random network using the Erdos-Renyi method
 
-    Returns the adjacency matrix of the network as an n by n numpy array
+    n (int): size of network (number of nodes)
+    p (float): probability that an edge exists between two nodes
+    undirected (bool): default is False; if set to True, creates symmetric graph
     '''
     A = np.random.rand(n,n)
     A = (A < p) + 0
@@ -25,8 +27,10 @@ def config_model_nx(N, exp = 2.5, law = "out"):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
     model with power law degree sequences
+    See networkx generators.degree_seq.directed_configuration_model documentation for more info
 
     N (int): number of nodes
+    exp (float): exponent of the powerlaw distribution
     law (str): inicates whether in-, out- or both in- and out-degrees should be distributed as a power law
         "out" : out-degrees distributed as powerlaw, in-degrees sum up to same # as out-degrees
         "in" : in-degrees distributed as powerlaw, out-degrees sum up to same # as in-degrees
@@ -57,19 +61,19 @@ def powerlaw_degrees(N, exp=2.5):
     '''
     Returns out- and in-degree sequences distributed according to a powerlaw with exp
     The two sequences sum up to the same number
-    See networkx utils.powerlaw_sequence for more details
+    See networkx utils.powerlaw_sequence documentation for more details
 
     N (int): : number of nodes in graph
     exp (float): exponent in powerlaw distribution pdf
     '''
     S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
     out_sum = np.sum(S_out)
-    if (out_sum % 2 != 0):
+    if (out_sum % 2 != 0): # make sure the sum of out-degrees is even
         ind = np.random.randint(N)
         S_out[ind] += 1
     
     S_in = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
-    while (np.sum(S_in) != out_sum):
+    while (np.sum(S_in) != out_sum): # make sure both degree sequences have the same sum
         ind = np.random.randint(N)
         if (np.sum(S_in) > out_sum):
             S_in[ind] -= 1
@@ -95,6 +99,11 @@ def uniform_degrees(n,sum):
     return degs
 
 def symmetrizeGraph(A):
+    '''
+    Given a general adjacency matrix, returns a symmetric adjacency matrix 
+
+    A (numpy array): adjacency matrix of a network
+    '''
     n = A.shape[0]
     if A.shape[1] != n:
         print("Error: adjacency matrix is not square!")
@@ -107,7 +116,7 @@ def symmetrizeGraph(A):
 def small_world(n,k,p):
     '''
     Returns adjacency matrix (A, numpy array) of random network using the Watts-
-    Strogatz graph function in the networkx package.
+    Strogatz graph function in the networkx package
 
     n (int): number of nodes
     k (int): Each node is joined with its k nearest neighbors in a ring topology
@@ -141,11 +150,11 @@ def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.
     '''
     Returns weights generated from model described in Experiments Section
 
-    A (numpy array): adjacency matrix of the network
+    A (numpy array): n by n adjacency matrix of the network
     diag (float): maximum norm of direct effects
-    offidiag (float): maximum norm of the indirect effects
-    rand_diag (numpy array):
-    rand_offdiag (numpy arry):
+    offdiag (float): maximum norm of the indirect effects
+    rand_diag (numpy array): array of n numbers governing direct effects of each node
+    rand_offdiag (numpy arry): array of n numbers governing indirect effects of each node
     '''
     n = A.shape[0]
 
@@ -159,11 +168,6 @@ def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.
     col_sum[col_sum==0] = 1
     temp = scipy.sparse.diags(C_offdiag/col_sum)
     C = C.dot(temp)
-
-    # out_deg = np.array(A.sum(axis=0)).flatten() # array of the out-degree of each node
-    # out_deg[out_deg==0] = 1
-    # temp = scipy.sparse.diags(C_offdiag/out_deg)
-    # C = A.dot(temp)
 
     if rand_diag.size == 0:
         rand_diag = np.random.rand(n)
@@ -179,9 +183,9 @@ linear_pom = lambda C,alpha, z : C.dot(z) + alpha
 
 # Scale the effects of higher order terms
 a1 = 1      # for linear effects
-a2 = 1    # for quadratic effects
-a3 = 1   # for cubic effects
-a4 = 1   # for quartic effects
+a2 = 1      # for quadratic effects
+a3 = 1      # for cubic effects
+a4 = 1      # for quartic effects
 
 # Define f(z)
 f_linear = lambda alpha, z, gz: alpha + a1*z # should be equivalent to linear_pom
@@ -191,7 +195,7 @@ f_quartic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.po
 
 def ppom(beta, C, alpha):
   '''
-  Returns k-degree polynomial potential outcomes (POM) function fy
+  Returns k-degree polynomial potential outcomes (POM) function
   
   beta (int): degree of POM 
   C (np.array): weighted adjacency matrix
@@ -233,61 +237,146 @@ def completeRD(n,treat):
     rng.shuffle(z)
     return z
 
+def staggered_rollout_bern(n, P):
+  '''
+  Returns Treatment Samples from Bernoulli Staggered Rollout
+
+  beta (int): degree of potential outcomes model
+  n (int): size of population
+  P (numpy array): treatment probabilities for each time step
+  '''
+
+  ### Initialize ###
+  Z = np.zeros(shape=(P.size,n))   # for each treatment sample z_t
+  U = np.random.rand(n)
+
+  ### staggered rollout experiment ###
+  for t in range(P.size):
+    ## sample treatment vector ##
+    Z[t,:] = (U < P[t])+0
+
+  return Z
+
+def staggered_rollout_complete(n, K):
+  '''
+  Returns Treatment Samples Z from Complete Staggered Rollout and number of people treated by each time step K
+
+  beta (int): degree of potential outcomes model
+  n (int): size of population
+  K (numpy array): total number of individuals treated by each timestep
+  '''
+
+  ### Initialize ###
+  Z = np.zeros(shape=(K.size,n))   # for each treatment sample, z_t
+  indices = np.random.permutation(np.arange(n))           # random permutation of the individuals
+
+  ### staggered rollout experiment ###
+  # indices: holds indices of entries equal to 0 in treatment vector
+  # to_treat: from the next set of indiv in the random permutation
+  for t in range(K.size-1):
+    to_treat = indices[K[t]:K[t+1]+1]
+    Z[t+1:,to_treat] = 1 
+
+  return Z
+
+def outcome_sums(Y, Z):
+  '''
+  Returns the sums of the outcomes Y(z_t) for each timestep t
+
+  Y (function): potential outcomes model
+  Z (numpy array): treatment vectors z_t for each timestep t
+   - each row should correspond to a timestep, i.e. Z should be beta+1 by n
+  '''
+  sums = np.zeros(Z.shape[0]) 
+  for t in range(Z.shape[0]):
+    sums[t] = np.sum(Y(Z[t,:]))
+  return sums
+
+################################################
+# Setup for graph agnostic w/ staggered rollout
+################################################
+def bern_coeffs(P):
+  '''
+  Returns Coefficients h_t from Bernoulli Staggered Rollout
+
+  P (numpy array): treatment probabilities for each time step
+  '''
+
+  ### Initialize ###
+  H = np.zeros(P.size)
+
+  ### Coefficients ###
+  for t in range(P.size):
+    one_minusP = 1 - P            # [1-p0, 1-p1, ... , 1-p_beta]
+    pt_minusP = P[t] - P          # [pt-p0, pt-p1, ... , pt-p_beta]
+    minusP = -1*P                 # [-p0, -p1, ... , -p_beta]
+    one_minusP[t] = 1; pt_minusP[t] = 1; minusP[t] = 1
+    fraction1 = one_minusP/pt_minusP
+    fraction2 = minusP/pt_minusP
+    H[t] = np.prod(fraction1) - np.prod(fraction2)
+
+  return H
+
+def seq_treatment_probs(M, p):
+  '''
+  Returns sequence of treatment probabilities for Bernoulli staggered rollout
+
+  M (int): fineness of measurements in staggered rollout (# timesteps - 1, not counting the time zero)
+  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
+  '''
+  fun = lambda i: (i)*p/(M)
+  P = np.fromfunction(fun, shape=(M+1,))
+  return P
+
+def complete_coeffs(n, K):
+  '''
+  Returns coefficients l_t from Complete Staggered Rollout
+
+  n (int): size of population
+  K (numpy array): total number of individuals treated by each timestep
+  '''
+
+  ### Initialize ###
+  L = np.zeros(K.size)             # for the coefficients L_t
+
+  for t in range(K.size):
+    n_minusK = n - K            # [n-k0, n-k1, ... , n-k_beta]
+    kt_minusK = K[t] - K        # [kt-k0, kt-k1, ... , kt-k_beta]
+    minusK = -1*K               # [-k0, -k1, ... , -k_beta]
+    n_minusK[t] = 1; kt_minusK[t] = 1; minusK[t] = 1
+    fraction1 = n_minusK/kt_minusK
+    fraction2 = minusK/kt_minusK
+    L[t] = np.prod(fraction1) - np.prod(fraction2)
+
+  return L
+
+def seq_treated(M, p, n, K=np.array([])):
+  '''
+  Returns number of people treated by each time step with K = [k0, k1, ... , kM] via ki = i*n*p/M
+  
+  M (int): fineness of measurements in staggered rollout (# timesteps - 1, not counting the time zero)
+  p (float): treatment budget e.g. if you can treat 5% of population, p = 0.05
+  n (int): size of population
+  '''
+  if K.size == 0:
+    fun = lambda i: np.floor(p*n*i/M).astype(int)
+    K = np.fromfunction(fun, shape=(M+1,))
+  return K
+
 ########################################
 # Estimators
 ########################################
-
-def est_us(n, p, y, A, z):
+def graph_agnostic(n, sums, H):
     '''
-    Returns an estimate of the TTE using our proposed estimator
+    Returns an estimate of the TTE with (beta+1) staggered rollout design
 
-    n (int): number of individuals
-    p (float): treatment probability
-    y (numpy array?): observations
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
+    n (int): popluation size
+    H (numpy array): PPOM coefficients h_t or l_t
+    sums (numpy array): sums of outcomes at each time step
     '''
-    zz = z/p - (1-z)/(1-p)
-    return 1/n * y.dot(A.dot(zz))
+    return (1/n)*H.dot(sums)
 
-def est_us_clusters(n, p, y, A, z, clusters=np.array([])):
-    '''
-    TODO
-
-    n (int): number of individuals
-    p (float): treatment probability
-    y (TODO): TODO
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    cluster (numpy array): TODO
-    '''
-    if clusters.size == 0:
-        z_c = z
-        A_c = A
-    else:
-        z_c = 1*(np.sum(np.multiply(z.reshape((n,1)),clusters),axis=0)>0)
-        A_c = 1*(A.dot(clusters) >0)
-    zz = z_c/p - (1-z_c)/(1-p)
-    return 1/n * y.dot(A_c.dot(zz))
-
-def est_ols(n, p, y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
-    Uses numpy.linalg.solve and normal equations
-
-    n (int): number of individuals
-    p (float): treatment probability
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
-    M = np.ones((n,3))
-    M[:,1] = z
-    M[:,2] = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
-
-    v = np.linalg.solve(M.T.dot(M),M.T.dot(y))
-    return v[1]+v[2]
-
+###### Least Squares Regression ######
 def est_ols_gen(y, A, z):
     '''
     Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
@@ -304,6 +393,33 @@ def est_ols_gen(y, A, z):
 
     v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
     return v[1]+v[2]
+
+def poly_regression_prop(beta, y, A, z):
+  '''
+  Returns an estimate of the TTE using polynomial regression using
+  numpy.linalg.lstsq
+
+  beta (int): degree of polynomial
+  y (numpy array): observed outcomes
+  A (square numpy array): network adjacency matrix
+  z (numpy array): treatment vector
+  '''
+  n = A.shape[0]
+
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)/(np.array(A.sum(axis=1)).flatten()-1+1e-10)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
+
+  v = np.linalg.lstsq(X,y,rcond=None)[0]
+  return np.sum(v)-v[0]
 
 def est_ols_treated(y, A, z):
     '''
@@ -322,71 +438,44 @@ def est_ols_treated(y, A, z):
     v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
     return v[1]+(v[2]*(np.sum(A)-n)/n)
 
-def est_ols_cy(n, p, y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
-    Uses numpy.linalg.solve and normal equations
+def poly_regression_num(beta, y, A, z):
+  '''
+  Returns an estimate of the TTE using polynomial regression using
+  numpy.linalg.lstsq
 
-    n (int): number of individuals
-    p (float): treatment probability
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
+  beta (int): degree of polynomial
+  y (numpy array): observed outcomes
+  A (square numpy array): network adjacency matrix
+  z (numpy array): treatment vector
+  '''
+  n = A.shape[0]
 
-    M = np.ones((n,4))
-    treated_neighb = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
-    M[:,0] = z
-    M[:,1] = z * treated_neighb
-    M[:,2] = 1-z 
-    M[:,3] = (1-z) * treated_neighb
+  if beta == 0:
+      X = np.ones((n,2))
+      X[:,1] = z
+  else:
+      X = np.ones((n,2*beta+1))
+      count = 1
+      treated_neighb = (A.dot(z)-z)
+      for i in range(beta):
+          X[:,count] = np.multiply(z,np.power(treated_neighb,i))
+          X[:,count+1] = np.power(treated_neighb,i+1)
+          count += 2
 
-    v = np.linalg.solve(M.T.dot(M),M.T.dot(y))
-    return v[0]+v[1]
+  # least squares regression
+  v = np.linalg.lstsq(X,y,rcond=None)[0]
 
-def est_ols_gen_cy(y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over proportion of neighbors treated)
-    Uses numpy.linalg.lstsq without the use of the normal equations
+  # Estimate TTE
+  count = 1
+  treated_neighb = np.array(A.sum(axis=1)).flatten()-1
+  for i in range(beta):
+      X[:,count] = np.power(treated_neighb,i)
+      X[:,count+1] = np.power(treated_neighb,i+1)
+      count += 2
+  TTE_hat = np.sum((X @ v) - v[0])/n
+  return TTE_hat
 
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
-
-    n = A.shape[0]
-    X = np.ones((n,4))
-    treated_neighb = (A.dot(z) - z) / ((np.array(A.sum(axis=1))-1)+1e-10).flatten()
-    X[:,0] = z
-    X[:,1] = z * treated_neighb
-    X[:,2] = 1-z 
-    X[:,3] = (1-z) * treated_neighb
-
-    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
-    return v[0]+v[1]
-
-def est_ols_treated_cy(y, A, z):
-    '''
-    Returns an estimate of the TTE using OLS (regresses over number neighbors treated)
-    Uses numpy.linalg.lstsq without the use of the normal equations
-
-    y (numpy array): observed outcomes
-    A (square numpy array): network adjacency matrix
-    z (numpy array): treatment vector
-    '''
-
-    n = A.shape[0]
-    X = np.ones((n,4))
-    treated_neighb = (A.dot(z) - z)
-    X[:,0] = z
-    X[:,1] = z * treated_neighb
-    X[:,2] = 1-z 
-    X[:,3] = (1-z) * treated_neighb
-
-    v = np.linalg.lstsq(X,y,rcond=None)[0] # solve for v in y = Xv
-    return v[0]+(v[1]*(np.sum(A)-n)/n)
-
-
+###### Difference in Means ######
 def diff_in_means_naive(y, z):
     '''
     Returns an estimate of the TTE using difference in means
@@ -422,36 +511,35 @@ def diff_in_means_fraction(n, y, A, z, tol):
         est = est - y.dot(control)/np.sum(control)
     return est
 
-#Horvitz-Thompson 
-def est_ht(n, p, y, A, z, clusters=np.array([])):
-  if clusters.size == 0:
-    zz = np.prod(np.tile(z/p,(n,1)),axis=1, where=A==1) - np.prod(np.tile((1-z)/(1-p),(n,1)),axis=1, where=A==1)
-  else:
-    deg = np.sum(clusters,axis=1)
-    wt_T = np.power(p,deg)
-    wt_C = np.power(1-p,deg)
-    zz = np.multiply(np.prod(A*z,axis=1),wt_T) - np.multiply(np.prod(A*(1-z),axis=1),wt_C)
-  return 1/n * y.dot(zz)
+###### Spline Interpolation ######
+def poly_interp_splines(n, P, sums, spltyp = 'quadratic'):
+  '''
+  Returns estimate of TTE using spline polynomial interpolation 
+  via scipy.interpolate.interp1d
 
-#Hajek
-def est_hajek(n, p, y, A, z, clusters=np.array([])): 
-  if clusters.size == 0:
-    zz_T = np.prod(np.tile(z/p,(n,1)), axis=1, where=A==1)
-    zz_C = np.prod(np.tile((1-z)/(1-p),(n,1)), axis=1, where=A==1)
-  else:
-    deg = np.sum(clusters,axis=1)
-    wt_T = np.power(p,deg)
-    wt_C = np.power(1-p,deg)
-    zz_T = np.multiply(np.prod(A*z,axis=1),wt_T) 
-    zz_C = np.multiply(np.prod(A*(1-z),axis=1),wt_C)
-  all_ones = np.ones(n)
-  est_T = 0
-  est_C=0
-  if all_ones.dot(zz_T) > 0:
-    est_T = y.dot(zz_T) / all_ones.dot(zz_T)
-  if all_ones.dot(zz_C) > 0:
-    est_C = y.dot(zz_C) / all_ones.dot(zz_C)
-  return est_T - est_C
+  n (int): popluation size
+  P (numpy array): sequence of probabilities p_t
+  sums (numpy array): sums of outcomes at each time step
+  spltyp (str): type of spline, can be 'quadratic, or 'cubic'
+  '''
+  assert spltyp in ['quadratic', 'cubic'], "spltyp must be 'quadratic', or 'cubic'"
+  f_spl = interpolate.interp1d(P, sums, kind=spltyp, fill_value='extrapolate')
+  TTE_hat = (1/n)*(f_spl(1) - f_spl(0))
+  return TTE_hat
+
+def poly_interp_linear(n, P, sums):
+  '''
+  Returns estimate of TTE using linear spline interpolation 
+  via scipy.interpolate.interp1d
+
+  n (int): popluation size
+  P (numpy array): sequence of probabilities p_t
+  sums (numpy array): sums of outcomes at each time step
+  '''
+
+  f_spl = interpolate.interp1d(P, sums, kind='slinear', fill_value='extrapolate')
+  TTE_hat2 = (1/n)*(f_spl(1) - f_spl(0))
+  return TTE_hat2
 
 ########################################
 # To save graphs to be C++ compatible
