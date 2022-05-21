@@ -75,6 +75,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
         ax.legend(handles=handles, labels=labels, loc='upper right', fontsize = 14)
 
     plt.savefig(save_path+graph+experiment+'-allCRD.pdf')
+    #plt.savefig(save_path+graph+experiment+'-allBRD.pdf')
     plt.close()
     
 
@@ -91,7 +92,8 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     ax.legend(handles=handles, labels=labels, loc='upper right', fontsize=10)
     plt.tight_layout()
 
-    plt.savefig(save_path+graph+experiment+'-ours.pdf')
+    plt.savefig(save_path+graph+experiment+'-oursCRD.pdf')
+    #plt.savefig(save_path+graph+experiment+'-oursBRD.pdf')
     plt.close()
 
 
