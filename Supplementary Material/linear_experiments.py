@@ -164,7 +164,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
         estimators.append(lambda y,z: ncls.est_ols_gen(y,A,z))
         estimators.append(lambda y,z: ncls.est_ols_treated(y,A,z))
 
-        alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75', 'OLS-Prop', 'OLS-Num']
+        alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'LeastSqs-Prop', 'LeastSqs-Num', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75']
 
         # Compare other estimators under Complete Randomized Design
         #bern_est = [0,2]
