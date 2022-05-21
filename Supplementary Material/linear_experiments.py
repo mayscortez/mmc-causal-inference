@@ -166,11 +166,11 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
 
         alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75', 'OLS-Prop', 'OLS-Num']
 
-        # Compare against Complete Randomized Design
+        # Compare other estimators under Complete Randomized Design
         #bern_est = [0,2]
         #CRD_est = [1,3,4,5,6]
 
-        # Compare against Bernoulli Randomized Design
+        # Compare other estimators under Bernoulli Randomized Design
         bern_est = [0,2,3,4,5,6]
         CRD_est = [1]        
 

@@ -11,8 +11,8 @@ import seaborn as sns
 import importlib
 import nbformat
 
-load_path = 'outputFiles/save/'
-save_path = 'outputFiles/save/'
+load_path = 'Plots/'
+save_path = 'Plots/'
 
 def main():
     graph = "CON" # configuration model with out-degrees distributed as power law
