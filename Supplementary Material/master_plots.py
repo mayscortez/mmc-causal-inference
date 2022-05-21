@@ -49,12 +49,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     df = pd.read_csv(load_path+graph+experiment+'-full-data.csv')
     #df = pd.read_csv(load_path+graph+experiment+'-full-data-BRD.csv')
 
-    if model == 'linear':
-        df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'OLS-Prop':CRD_est[3],'OLS-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
-        #df.rename(columns={'Graph-Agnostic-p':'PI(p)', 'Graph-Agnostic-num':'PI(k/n)', 'Graph-AgnosticVR': 'PI(kHat/n)', 'OLS-Prop':'LS-Prop','OLS-Num':'LS-Num','Diff-Means-Stnd': 'DM', 'Diff-Means-Frac-0.75':'DM(0.75)'})
-    else:
-        df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'LeastSqs-Prop':CRD_est[3],'LeastSqs-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
-        #df.rename(columns={'Graph-Agnostic-p':'PI(p)', 'Graph-Agnostic-num':'PI(k/n)', 'Graph-AgnosticVR': 'PI(kHat/n)', 'LeastSqs-Prop':'LS-Prop','LeastSqs-Num':'LS-Num','Diff-Means-Stnd': 'DM', 'Diff-Means-Frac-0.75':'DM(0.75)'})
+    df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'LeastSqs-Prop':CRD_est[3],'LeastSqs-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
 
     plt.rc('text', usetex=True)
     
