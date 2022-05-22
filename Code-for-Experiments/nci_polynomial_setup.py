@@ -338,9 +338,9 @@ def graph_aware_estimator(n, p, y, A, z, beta):
   est = 0
   for i in range(n):
     w = 0
-    a_lim = min(beta,treated_neighb[i])
+    a_lim = min(beta,int(treated_neighb[i]))
     for a in range(a_lim+1):
-      b_lim = min(beta - a,control_neighb[i])
+      b_lim = min(beta - a,int(control_neighb[i]))
       for b in range(b_lim+1):
         w = w + ((1-p)**(a+b) - (-p)**(a+b)) * p**(-a) * (p-1)**(-b) * special.binom(treated_neighb[i],a)  * special.binom(control_neighb[i],b)
     est = est + y[i]*w
