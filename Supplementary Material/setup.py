@@ -8,21 +8,6 @@ from scipy import interpolate
 # Functions to generate random networks
 ########################################
 
-def erdos_renyi(n,p,undirected=False):
-    '''
-    Returns adjacency matrix (numpy array) of a random network using the Erdos-Renyi method
-
-    n (int): size of network (number of nodes)
-    p (float): probability that an edge exists between two nodes
-    undirected (bool): default is False; if set to True, creates symmetric graph
-    '''
-    A = np.random.rand(n,n)
-    A = (A < p) + 0
-    A[range(n),range(n)] = 1   # everyone is affected by their own treatment
-    if undirected:
-        A = symmetrizeGraph(A)
-    return A
-
 def config_model_nx(N, exp = 2.5, law = "out"):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
@@ -97,50 +82,6 @@ def uniform_degrees(n,sum):
         degs[i] += 1
         i += 1
     return degs
-
-def symmetrizeGraph(A):
-    '''
-    Given a general adjacency matrix, returns a symmetric adjacency matrix 
-
-    A (numpy array): adjacency matrix of a network
-    '''
-    n = A.shape[0]
-    if A.shape[1] != n:
-        print("Error: adjacency matrix is not square!")
-        return A
-    for i in range(n):
-        for j in range(i):
-            A[i,j] = A[j,i]
-    return A
-
-def small_world(n,k,p):
-    '''
-    Returns adjacency matrix (A, numpy array) of random network using the Watts-
-    Strogatz graph function in the networkx package
-
-    n (int): number of nodes
-    k (int): Each node is joined with its k nearest neighbors in a ring topology
-    p (float, in [0,1]): probability of rewiring each edge
-    '''
-    G = nx.watts_strogatz_graph(n, k, p)
-    return nx.to_numpy_array(G)
-
-def SBM(clusterSize, probabilities):
-    '''
-    Returns adjacency matrix A (numpy array) of a stochastic block matrix where
-
-    # TODO:
-    clusterSize
-    probabilities
-
-    **ASSUME SYMMETRIC PROBABILITY MATRIX**
-    '''
-    p = np.kron(probabilities, np.ones((clusterSize,clusterSize)))
-    n = p.shape[0]
-    A = np.random.rand(n,n)
-    A = (A < p) + 0
-    A[range(n),range(n)] = 1   # everyone is affected by their own treatment
-    return A
 
 ########################################
 # Functions to generate network weights
@@ -540,67 +481,3 @@ def poly_interp_linear(n, P, sums):
   f_spl = interpolate.interp1d(P, sums, kind='slinear', fill_value='extrapolate')
   TTE_hat2 = (1/n)*(f_spl(1) - f_spl(0))
   return TTE_hat2
-
-########################################
-# To save graphs to be C++ compatible
-########################################
-def printGraph(A,filename, symmetric=True):
-    f = open(filename, 'w')
-    print("# graph", file=f)
-    print("# Nodes: "+str(A.shape[0]), file=f)
-    print("# NodeId\tNodeId", file=f)
-    indices = np.argwhere(A)
-    for i in indices:
-        if symmetric and i[0] > i[1]:
-                continue
-        print(str(i[0])+"\t"+str(i[1]), file=f)
-    f.close()
-
-def loadGraph(filename, n, symmetric=True):
-    A = np.zeros((n,n))
-    f = open(filename, 'r')
-    next(f)
-    next(f)
-    next(f)
-    for line in f:
-        line = line.strip()
-        ind = line.split()
-        A[int(ind[0]),int(ind[1])] = 1
-        if symmetric:
-            A[int(ind[1]),int(ind[0])] = 1
-    return A
-
-def printWeights(C,alpha,filename):
-    f = open(filename, 'w')
-    n = C.shape[0]
-    print("baseline values", file=f)
-    print("n: "+str(n), file=f)
-    for i in range(n):
-        print(str(alpha[i]), file=f)
-    nnz = np.count_nonzero(C)
-    print("treatment effect weights", file=f)
-    print("edges: "+str(nnz), file=f)
-    (ind1,ind2) = np.nonzero(C)
-    for i in range(nnz):
-        a = ind1[i]
-        b = ind2[i]
-        print(str(a)+"\t"+str(b)+"\t"+str(C[a,b]), file=f)
-    f.close()
-
-def loadWeights(filename,n):
-    f = open(filename, 'r')
-    next(f)
-    next(f)
-    alpha = np.zeros(n)
-    for i in range(n):
-        line = next(f)
-        line = line.strip()
-        alpha[i] = float(line)
-    next(f)
-    next(f)
-    C = np.zeros((n,n))
-    for line in f:
-        line = line.strip()
-        ind = line.split()
-        C[int(ind[0]),int(ind[1])] = float(ind[2])
-    return (C,alpha)
