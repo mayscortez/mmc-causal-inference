@@ -27,7 +27,7 @@ def main():
     beta = 2            # degree of potential outcomes model
     graphStr = "CON"    # configuration model
 
-    f = open(save_path+'experiments_output_deg'+str(beta)+'.txt', 'w')
+    f = open(save_path+'experiments_output_deg'+str(beta)+'-p15.txt', 'w')
 
     ###########################################
     # Run Experiment: Varying Size of Network
@@ -35,7 +35,7 @@ def main():
     startTime1 = time.time()
     diag = 1        # controls magnitude of direct effects
     r = 1.25        # ratio between indirect and direct effects
-    p = 0.5         # treatment probability
+    p = 0.15         # treatment probability
 
     results = []
     sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
@@ -54,11 +54,12 @@ def main():
     print('Runtime (size experiment) in minutes: {}\n'.format(executionTime/60))
     print('Runtime (size experiment) in minutes: {}\n'.format(executionTime/60),file=f)         
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-size-deg'+str(beta)+'-full-data.csv')
+    df.to_csv(save_path+graphStr+'-size-deg'+str(beta)+'-p15-full-data.csv')
 
     ################################################
     # Run Experiment: Varying Treatment Probability 
     ################################################
+    """     
     startTime2 = time.time()
     n = 5000        # number of nodes in network
     diag = 1        # maximum norm of direct effect
@@ -81,13 +82,13 @@ def main():
     print('Runtime (tp experiment) in minutes: {}\n'.format(executionTime/60))        
     print('Runtime (tp experiment) in minutes: {}\n'.format(executionTime/60),file=f)     
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-tp-deg'+str(beta)+'-full-data.csv')
+    df.to_csv(save_path+graphStr+'-tp-deg'+str(beta)+'-full-data.csv') """
 
     ###########################################################
     # Run Experiment: Varying Ratio of Indirect & Direct Effects 
     ###########################################################
-    n = 5000
-    p = 0.5    # treatment probability
+    n = 15000
+    p = 0.15    # treatment probability
     diag = 1   # maximum norm of direct effect
 
     results = []
@@ -107,7 +108,7 @@ def main():
     print('Runtime (ratio experiment) in minutes: {}\n'.format(executionTime/60))          
     print('Runtime (ratio experiment) in minutes: {}\n'.format(executionTime/60),file=f)    
     df = pd.DataFrame.from_records(results)
-    df.to_csv(save_path+graphStr+'-ratio-deg'+str(beta)+'-full-data.csv')
+    df.to_csv(save_path+graphStr+'-ratio-deg'+str(beta)+'-p15-full-data.csv')
 
     executionTime = (time.time() - startTime1)
     print('Runtime (whole script) in hours: {}'.format(executionTime/3600))
