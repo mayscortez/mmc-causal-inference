@@ -20,20 +20,21 @@ def main():
     x_plot = ['$r$', '$p$', '$n$']
     # graph_list = ["CON-prev","CON","er","sw-ring","SBM"]
     # for graph in graph_list:
-    graph = "sw"
-    for beta in [1]:
+    graph = "er"
+    for beta in [1,2]:
         if graph == "sw":
             title = ['$\\beta='+str(beta)+', n=9216, p=0.2$','$\\beta='+str(beta)+', n=9216, r=2$','$\\beta='+str(beta)+', p=0.2, r=2$']
         else:
             title = ['$\\beta='+str(beta)+', n=15000, p=0.2$','$\\beta='+str(beta)+', n=15000, r=2$','$\\beta='+str(beta)+', p=0.2, r=2$']
-        for ind in [2]:
-            plot(graph,x_var[ind],x_label[ind],'deg'+str(beta),x_plot[ind],title[ind])
+        est_names = ['SNIPES('+str(beta)+')', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
+        for ind in [0,1,2]:
+            plot(graph,x_var[ind],x_label[ind],'deg'+str(beta),x_plot[ind],title[ind],est_names)
 
 
-def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
+def plot(graph,x_var,x_label,model,x_plot,title,est_names,permute=False):
     experiment = '-'+x_label+'-'+model
     print(experiment)
-    est_names = ['GA', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
+    #est_names = ['SNIPES', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
 
     # Create and save plots
     df = pd.read_csv(load_path+graph+experiment+'-graph_aware.csv')
