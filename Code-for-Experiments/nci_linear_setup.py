@@ -62,35 +62,6 @@ def config_model(di):
 
     return A
 
-def config_model_nx_prev(N, t = 50000, law = "out"):
-    '''
-    Returns networkx configuration model with power law degree sequences
-    N = number of nodes
-    t = number of tries for powerlaw sequence
-    law = "out" : out-degrees distributed as powerlaw, in-degrees sum up to same # as out-degrees
-    law = "in" : in-degrees distributed as powerlaw, out-degrees sum up to same # as in-degrees
-    law = "both" : both in- and out-degrees distributed as powerlaw
-    '''
-    assert law in ["out", "in", "both"], "law must = 'out', 'in', or 'both'"
-    if law == "out":
-        deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_in = constrained_sum_sample_nonneg(N,np.sum(deg_seq_out))
-    elif law == "in":
-        deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_out = constrained_sum_sample_nonneg(N,np.sum(deg_seq_in))
-    else:
-        deg_seq_out = nx.random_powerlaw_tree_sequence(N,tries=t)
-        deg_seq_in = nx.random_powerlaw_tree_sequence(N,tries=t)
-
-    G = nx.generators.degree_seq.directed_configuration_model(deg_seq_in,deg_seq_out)
-
-    G.remove_edges_from(nx.selfloop_edges(G)) # remove self-loops
-    G = nx.DiGraph(G)                         # remove parallel edges
-    A = nx.to_scipy_sparse_matrix(G)                  # retrieve adjacency matrix
-    A.setdiag(np.ones(N))                    # everyone is affected by their own treatment
-
-    return A
-
 def config_model_nx(N, exp = 2.5, law = "out", unif = True):
     '''
     Returns the adjacency matrix A (as a numpy array) of a networkx configuration
@@ -131,6 +102,9 @@ def config_model_nx(N, exp = 2.5, law = "out", unif = True):
     return A
 
 def powerlaw_degrees(N, exp):
+    '''
+    Returns powerlaw degree sequence for N vertices, exp is powerlaw distribution exponent
+    '''
     S_out = np.around(nx.utils.powerlaw_sequence(N, exponent=exp), decimals=0).astype(int)
     out_sum = np.sum(S_out)
     if (out_sum % 2 != 0):
@@ -184,7 +158,7 @@ def SBM(clusterSize, probabilities):
 
     **ASSUME SYMMETRIC PROBABILITY MATRIX**
     '''
-    p = np.kron(probabilities, np.ones((clusterSize,clusterSize)))
+    p = np.kron(probabilities, np.ones((clusterSize,clusterSize))) # symmetric matrix of edge probabilities
     n = p.shape[0]
     A = np.random.rand(n,n)
     A = (A < p) + 0
