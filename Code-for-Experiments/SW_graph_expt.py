@@ -1,4 +1,4 @@
-from nci_lin_setup import *
+from nci_linear_setup import *
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
