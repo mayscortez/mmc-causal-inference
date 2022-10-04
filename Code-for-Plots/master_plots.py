@@ -10,7 +10,7 @@ import pandas as pd
 import seaborn as sns
 
 load_path = 'outputFiles/save/'
-save_path = 'outputFiles/save/Erdos-Renyi-Plots'
+save_path = 'outputFiles/save/Erdos-Renyi-Plots/'
 
 def main():
     #graph = "CON" # configuration model
