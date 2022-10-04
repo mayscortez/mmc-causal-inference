@@ -1,6 +1,8 @@
 '''
-Script to plot results from ratio-bern-quadratic experiment
-(varying ratio btw indirect/direct effects; bernoulli RD; quadratic model)
+Script to plot results from SNIPE estimator under Bernoulli design experiments:
+    - vary size of network
+    - vary treatment budget
+    - vary ratio of direct:indirect effects
 '''
 
 # Setup
@@ -8,8 +10,6 @@ from matplotlib import rcParams
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import importlib
-import nbformat
 
 load_path = 'outputFiles/graph_aware/'
 save_path = 'outputFiles/graph_aware/'
