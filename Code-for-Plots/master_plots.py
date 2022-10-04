@@ -1,6 +1,7 @@
 '''
 Script to plot results from ratio-bern-quadratic experiment
 (varying ratio btw indirect/direct effects; bernoulli RD; quadratic model)
+Staggered Rollout Estimators
 '''
 
 # Setup
@@ -10,29 +11,36 @@ import pandas as pd
 import seaborn as sns
 
 load_path = 'outputFiles/save/'
+#save_path = 'outputFiles/save/Configuration-Model-Plots/'
 save_path = 'outputFiles/save/Erdos-Renyi-Plots/'
 
 def main():
-    #graph = "CON" # configuration model
-    graph = "ER"
+    #graph = "CON"  # configuration model
+    graph = "ER"    # erdos-renyi
+
+    rand_design = "-allCRD"     # Complete
+    #rand_design = "-allBRD"    # Bernoulli
+
     title = ['$\\beta=1, n=5000, k/n=0.05$','$\\beta=1, n=5000, r=1.25$','$\\beta=1, k/n=0.05, r=1.25$']
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
-    x_plot = ['$r$', '$k/n$', '$n$']
+    x_plot = ['$r$', '$k/n$', '$n$']   # Complete
+    #x_plot = ['$r$', '$p$', '$n$']    # Bernoulli
     model = ['linear']
     for b in model:
         for ind in range(len(x_var)):
-            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
+            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
     
-        
+    
     title = ['$\\beta=2, n=5000, k/n=0.5$','$\\beta=2, n=5000, r=1.25$','$\\beta=2, k/n=0.5, r=1.25$']
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
-    x_plot = ['$r$', '$k/n$', '$n$']
+    #x_plot = ['$r$', '$k/n$', '$n$'] #CRD
+    x_plot = ['$r$', '$p$', '$n$'] #BRD
     model = ['deg2']
     for b in model:
         for ind in range(len(x_var)):
-            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
+            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
     
     title = ['$n=15000, k/n=0.5, r=1.25$']
     x_label = ['varying']
@@ -41,13 +49,12 @@ def main():
     model = ['deg']
     for b in model:
         for ind in range(len(x_var)):
-            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
+            plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
+    
 
-
-def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
-    # CRD_est = ['$\text{PI}(k/n)$', '$\text{DM}$', '$\text{DM}(0.75)$', '$\text{LS-Prop}$', '$\text{LS-Num}$']
-    # our_est = ['$\text{PI}(p)$', '$\text{PI}(k/n)$', '$\text{PI}(\hat{k}/n)$']
+def plot(graph,x_var,x_label,model,x_plot,title,rand_design,permute=False):
     CRD_est = ['PI($k/n$)', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
+    BRD_est = ['PI($p$)', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
     our_est = ['PI($p$)', 'PI($k/n$)', 'PI($\hat{k}/n$)']
 
     experiment = '-'+x_label+'-'+model
@@ -58,7 +65,8 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     if model == 'linear':
         df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'OLS-Prop':CRD_est[3],'OLS-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
     else:
-        df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'LeastSqs-Prop':CRD_est[3],'LeastSqs-Num':CRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
+        df = df.assign(Estimator = lambda df: df.Estimator.replace({'Graph-Agnostic-p':our_est[0], 'Graph-Agnostic-num':our_est[1], 'Graph-AgnosticVR': our_est[2], 'LeastSqs-Prop':BRD_est[3],'LeastSqs-Num':BRD_est[4],'Diff-Means-Stnd': CRD_est[1], 'Diff-Means-Frac-0.75':CRD_est[2]}))
+    
 
     if experiment == '-varying-deg':
         df = df.loc[df['beta'].isin([0,1,2,3])]
@@ -68,7 +76,9 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     # Plot with all the estimators
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    newData = df.loc[df['Estimator'].isin(CRD_est)]
+
+    newData = df.loc[df['Estimator'].isin(CRD_est)]    #Complete
+    #newData = df.loc[df['Estimator'].isin(BRD_est)]     #Bernoulli
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=newData, ci='sd', legend='brief', markers=True)
     ax.set_ylim(-0.7,0.3)
@@ -83,10 +93,10 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     else:
         ax.legend(handles=handles, labels=labels, loc='upper right', fontsize = 14)
 
-    plt.savefig(save_path+graph+experiment+'-allCRD.pdf')
+    plt.savefig(save_path+graph+experiment+rand_design+'.pdf')
     plt.close()
     
-
+    
     # Plot with our the estimators
     fig = plt.figure(figsize=(5,3.5))
     ax = fig.add_subplot(111)
@@ -102,7 +112,6 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
 
     plt.savefig(save_path+graph+experiment+'-ours.pdf')
     plt.close()
-
 
 if __name__ == "__main__":
     main()
