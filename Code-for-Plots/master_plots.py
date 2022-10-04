@@ -1,7 +1,12 @@
 '''
-Script to plot results from ratio-bern-quadratic experiment
-(varying ratio btw indirect/direct effects; quadratic model)
-Staggered Rollout Estimators
+Script to plot results from staggered rollout experiments:
+    - vary size of network
+    - vary treatment budget
+    - vary ratio of direct:indirect effects
+    - vary beta
+Staggered Rollout Estimators: Bernoulli RD, Complete RD, and Beroulli Realized
+
+Take careful look at commented lines before running... may need to uncomment some and comment others
 '''
 
 # Setup
@@ -37,14 +42,15 @@ def main():
     title = ['$\\beta=2, n=5000, p=0.5$','$\\beta=2, n=5000, r=1.25$','$\\beta=2, p=0.5, r=1.25$']  # Bernoulli
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
-    #x_plot = ['$r$', '$k/n$', '$n$'] #CRD
-    x_plot = ['$r$', '$p$', '$n$'] #BRD
+    #x_plot = ['$r$', '$k/n$', '$n$'] #Complete
+    x_plot = ['$r$', '$p$', '$n$'] #Bernoulli
     model = ['deg2']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
-    
-    title = ['$n=15000, p=k/n=0.5, r=1.25$'] #Complete and Bernoulli
+
+    #title = ['$n=15000, k/n=0.5, r=1.25$'] #Complete
+    title = ['$n=15000, p=0.5, r=1.25$'] #Bernoulli
     x_label = ['varying']
     x_var = ['beta']
     x_plot = ['$\\beta$']
