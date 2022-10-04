@@ -1,14 +1,10 @@
 '''
-Experiments: polynomial setting
+Experiments: polynomial setting - staggered rollout
 '''
 
 # Setup
 import numpy as np
-import random
-import networkx as nx
-from math import log, ceil
 import pandas as pd
-import seaborn as sns
 import sys
 import time
 import scipy.sparse
@@ -17,15 +13,16 @@ import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 #sys.path.append(path_to_module)
-save_path = 'outputFiles/christina/'
+save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
     G = 30          # number of graphs we want to average over
     T = 100          # number of trials per graph
-    graphStr = "CON"   # configuration model
+    #graphStr = "CON"   # configuration model
+    graphStr = "ER"   # configuration model
 
-    f = open(save_path+'experiments_output_varying_deg.txt', 'w')
+    f = open(save_path+graphStr+'_experiments_output_varying_deg.txt', 'w')
 
     ###########################################
     # Run Experiment: Varying Size of Network
@@ -73,7 +70,9 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
             A = scipy.sparse.load_npz(name+'-A.npz')
             rand_wts = np.load(name+'-wts.npy')
         else:
-            A = ncls.config_model_nx(n)
+            deg = 10
+            A = ncls.erdos_renyi(n,deg/n)
+            #A = ncls.config_model_nx(n)
             rand_wts = np.random.rand(n,3)
 
         alpha = rand_wts[:,0].flatten()

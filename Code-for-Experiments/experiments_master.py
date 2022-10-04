@@ -1,19 +1,14 @@
 '''
-Experiments: Linear setting
+Experiments: Linear setting - Staggered Rollout
 '''
 
 # Setup
 import numpy as np
-import random
-import networkx as nx
-from math import log, ceil
 import pandas as pd
-import seaborn as sns
 import sys
 import time
 import scipy.sparse
 import nci_linear_setup as ncls
-import nci_polynomial_setup as ncps
 
 path_to_module = 'Code-for-Experiments/'
 sys.path.append(path_to_module)
@@ -23,9 +18,10 @@ save_path_graphs = 'graphs/'
 def main():
     G = 30          # number of graphs we want to average over
     T = 100          # number of trials per graph
-    graphStr = "CON"   # configuration model
+    #graphStr = "CON"   # configuration model
+    graphStr = "ER"   # Erdos-Renyi
 
-    f = open(save_path+'experiments_output.txt', 'w')
+    f = open(save_path+graphStr+'_experiments_output.txt', 'w')
 
     ###########################################
     # Run Experiment: Varying Size of Network
@@ -131,7 +127,9 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
             A = scipy.sparse.load_npz(name+'-A.npz')
             rand_wts = np.load(name+'-wts.npy')
         else:
-            A = ncls.config_model_nx(n)
+            deg = 10
+            A = ncls.erdos_renyi(n,deg/n)
+            #A = ncls.config_model_nx(n)
             rand_wts = np.random.rand(n,3)
 
         alpha = rand_wts[:,0].flatten()
@@ -155,6 +153,9 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,loadGraphs=False):
         estimators.append(lambda y,z: ncls.est_ols_gen(y,A,z))
         estimators.append(lambda y,z: ncls.est_ols_treated(y,A,z))
 
+        # Graph-Agnostic-p is staggered rollout with Bernoulli RD treatments
+        # Graph-Agnostic-num is staggered rollout with Complete RD treatments
+        # Graph-AgnosticVR is staggered rollout with realized Bernoulli RD treatments
         alg_names = ['Graph-Agnostic-p', 'Graph-Agnostic-num', 'Graph-AgnosticVR', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75', 'OLS-Prop', 'OLS-Num']
 
         bern_est = [0,2]

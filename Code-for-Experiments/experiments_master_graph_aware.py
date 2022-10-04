@@ -35,7 +35,7 @@ def main(argv):
 
     graphStr = "er"
 
-    if graphStr = "sw":
+    if graphStr == "sw":
         loadGraphs = True
     else:
         loadGraphs = False

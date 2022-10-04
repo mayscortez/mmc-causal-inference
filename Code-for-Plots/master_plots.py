@@ -8,15 +8,13 @@ from matplotlib import rcParams
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import importlib
-import nbformat
 
 load_path = 'outputFiles/save/'
 save_path = 'outputFiles/save/'
 
 def main():
-    graph = "CON" # configuration model with out-degrees distributed as power law
-    
+    #graph = "CON" # configuration model
+    graph = "ER"
     title = ['$\\beta=1, n=5000, k/n=0.05$','$\\beta=1, n=5000, r=1.25$','$\\beta=1, k/n=0.05, r=1.25$']
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
