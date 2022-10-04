@@ -44,7 +44,7 @@ def main():
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
 
 
-def plot(graph,x_var,x_label,model,x_plot,title,permute=True):
+def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     # CRD_est = ['$\text{PI}(k/n)$', '$\text{DM}$', '$\text{DM}(0.75)$', '$\text{LS-Prop}$', '$\text{LS-Num}$']
     # our_est = ['$\text{PI}(p)$', '$\text{PI}(k/n)$', '$\text{PI}(\hat{k}/n)$']
     CRD_est = ['PI($k/n$)', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
