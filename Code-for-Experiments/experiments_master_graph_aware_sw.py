@@ -171,10 +171,6 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
     
         alpha = rand_wts[:,0].flatten()
         C = ncls.simpleWeights(A, diag, offdiag, rand_wts[:,1].flatten(), rand_wts[:,2].flatten())
-
-        # C = ncls.weights_node_deg_unif(A)
-        # C = C*A
-        # C = ncls.normalized_weights(C, diag=10, offdiag=20)
         
         # potential outcomes model
         if beta == 1:
@@ -201,7 +197,7 @@ def run_experiment(G,T,n,p,r,graphStr,diag=1,beta=2,loadGraphs=False):
         estimators.append(lambda y,z: ncls.diff_in_means_naive(y,z))
         estimators.append(lambda y,z: ncls.diff_in_means_fraction(n,y,A,z,0.75))
 
-        alg_names = ['Graph-Aware', 'LeastSqs-Prop', 'LeastSqs-Num', 'Diff-Means-Stnd', 'Diff-Means-Frac-0.75']
+        alg_names = ['SNIPE('+str(beta)+')', 'LS-Prop', 'LS-Num', 'DM', 'DM(0.75)']
 
         for i in range(T):
             dict_base.update({'rep':i, 'Rand': 'Bernoulli'})
