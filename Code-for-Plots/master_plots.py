@@ -44,7 +44,7 @@ def main():
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind])
 
 
-def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
+def plot(graph,x_var,x_label,model,x_plot,title,permute=True):
     # CRD_est = ['$\text{PI}(k/n)$', '$\text{DM}$', '$\text{DM}(0.75)$', '$\text{LS-Prop}$', '$\text{LS-Num}$']
     # our_est = ['$\text{PI}(p)$', '$\text{PI}(k/n)$', '$\text{PI}(\hat{k}/n)$']
     CRD_est = ['PI($k/n$)', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
@@ -71,7 +71,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     newData = df.loc[df['Estimator'].isin(CRD_est)]
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=newData, ci='sd', legend='brief', markers=True)
-    ax.set_ylim(-0.75,0.35)
+    ax.set_ylim(-0.7,0.3)
     ax.set_xlabel(x_plot, fontsize = 18)
     ax.set_ylabel("Relative Bias", fontsize = 18)
     ax.set_title(title, fontsize=20)
@@ -92,7 +92,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,permute=False):
     ax = fig.add_subplot(111)
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(our_est)], ci='sd', legend='brief', markers=True)
-    ax.set_ylim(-0.2,0.2)
+    ax.set_ylim(-0.15,0.15)
     ax.set_xlabel(x_plot, fontsize = 14)
     ax.set_ylabel("Relative Bias", fontsize = 14)
     ax.set_title(title, fontsize=16)
