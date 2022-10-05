@@ -89,7 +89,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,rand_design,permute=False):
     newData = df.loc[df['Estimator'].isin(BRD_est)]     #Bernoulli
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=newData, ci='sd', legend='brief', markers=True)
-    ax.set_ylim(-0.5,0.5)
+    ax.set_ylim(-0.75,0.75)
     ax.set_xlabel(x_plot, fontsize = 18)
     ax.set_ylabel("Relative Bias", fontsize = 18)
     ax.set_title(title, fontsize=20)
@@ -110,7 +110,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,rand_design,permute=False):
     ax = fig.add_subplot(111)
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=df.loc[df['Estimator'].isin(our_est)], ci='sd', legend='brief', markers=True)
-    ax.set_ylim(-0.15,0.15)
+    ax.set_ylim(-0.2,0.2)
     ax.set_xlabel(x_plot, fontsize = 14)
     ax.set_ylabel("Relative Bias", fontsize = 14)
     ax.set_title(title, fontsize=16)
