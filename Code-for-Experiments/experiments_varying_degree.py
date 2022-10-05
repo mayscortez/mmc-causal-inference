@@ -17,8 +17,8 @@ save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
+    G = 10          # number of graphs we want to average over
+    T = 500          # number of trials per graph
     #graphStr = "CON"   # configuration model
     graphStr = "ER"   # configuration model
 
@@ -28,8 +28,8 @@ def main():
     # Run Experiment: Varying Size of Network
     ###########################################
     startTime1 = time.time()
-    r = 1.25
-    p = 0.5        # treatment probability
+    r = 2
+    p = 0.2        # treatment probability
     n = 15000
     diag=1
 

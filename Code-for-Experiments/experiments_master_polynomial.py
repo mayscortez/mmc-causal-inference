@@ -17,8 +17,8 @@ save_path = 'outputFiles/save/'
 save_path_graphs = 'graphs/'
 
 def main():
-    G = 30          # number of graphs we want to average over
-    T = 100          # number of trials per graph
+    G = 10          # number of graphs we want to average over
+    T = 500          # number of trials per graph
     beta = 2
     #graphStr = "CON"   # configuration model
     graphStr = "ER"   # Erdos-Renyi
@@ -29,13 +29,13 @@ def main():
     # Run Experiment: Varying Size of Network
     ###########################################
     startTime1 = time.time()
-    diag = 1        # controls magnitude of direct effects
-    r = 1.25        # ratio between indirect and direct effects
-    p = 0.5        # treatment probability
+    diag = 10        # controls magnitude of direct effects
+    r = 2        # ratio between indirect and direct effects
+    p = 0.2        # treatment probability
 
     results = []
-    sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
-
+    #sizes = np.array([1000, 3000, 5000, 7000, 9000, 11000, 13000, 15000])
+    sizes = np.array([ 5000, 10000, 15000, 20000, 25000])
     for n in sizes:
         print("n = {}".format(n))
         startTime2 = time.time()
@@ -56,9 +56,9 @@ def main():
     # Run Experiment: Varying Treatment Probability 
     ################################################
     startTime2 = time.time()
-    n = 5000        # number of nodes in network
-    diag = 1     # maximum norm of direct effect
-    r = 1.25        # ratio between indirect and direct effects
+    n = 15000        # number of nodes in network
+    diag = 10     # maximum norm of direct effect
+    r = 2       # ratio between indirect and direct effects
 
     results = []
     p_treatments = np.array([0.03, 0.06, 0.09, 0.12, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]) # treatment probabilities
@@ -82,9 +82,9 @@ def main():
     ###########################################################
     # Run Experiment: Varying Ratio of Indirect & Direct Effects 
     ###########################################################
-    n = 5000
-    p = 0.5    # treatment probability
-    diag = 1   # maximum norm of direct effect
+    n = 15000
+    p = 0.2    # treatment probability
+    diag = 10   # maximum norm of direct effect
 
     results = []
     ratio = [0.01, 0.1, 0.25,0.5,0.75,1,1/0.75,1/0.5,3,1/0.25]

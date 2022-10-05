@@ -1,7 +1,7 @@
-Runtime (in seconds) for beta = 0 step: 79.00491571426392
-Runtime (in seconds) for beta = 1 step: 95.75340867042542
-Runtime (in seconds) for beta = 2 step: 130.313001871109
-Runtime (in seconds) for beta = 3 step: 157.70771145820618
-Runtime (in seconds) for beta = 4 step: 192.83592748641968
-Runtime (size experiment) in minutes: 10.926959037780762
+Runtime (in seconds) for beta = 0 step: 44.6384859085083
+Runtime (in seconds) for beta = 1 step: 75.24205303192139
+Runtime (in seconds) for beta = 2 step: 137.7178828716278
+Runtime (in seconds) for beta = 3 step: 185.06472754478455
+Runtime (in seconds) for beta = 4 step: 240.46890020370483
+Runtime (size experiment) in minutes: 11.38558300336202
 
