@@ -23,34 +23,34 @@ def main():
     #graph = "CON"  # configuration model
     graph = "ER"    # erdos-renyi
 
-    #rand_design = "-allCRD"     # Complete
-    rand_design = "-allBRD"    # Bernoulli
+    rand_design = "-allCRD"     # Complete
+    #rand_design = "-allBRD"    # Bernoulli
 
-    #title = ['$\\beta=1, n=15000, k/n=0.2$','$\\beta=1, n=15000, r=2$','$\\beta=1, k/n=0.2, r=2$']   # Complete 
-    title = ['$\\beta=1, n=15000, p=0.2$','$\\beta=1, n=15000, r=2$','$\\beta=1, p=0.2, r=2$']    # Bernoulli
+    title = ['$\\beta=1, n=15000, k/n=0.2$','$\\beta=1, n=15000, r=2$','$\\beta=1, k/n=0.2, r=2$']   # Complete 
+    #title = ['$\\beta=1, n=15000, p=0.2$','$\\beta=1, n=15000, r=2$','$\\beta=1, p=0.2, r=2$']    # Bernoulli
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
-    #x_plot = ['$r$', '$k/n$', '$n$']   # Complete
-    x_plot = ['$r$', '$p$', '$n$']    # Bernoulli
+    x_plot = ['$r$', '$k/n$', '$n$']   # Complete
+    #x_plot = ['$r$', '$p$', '$n$']    # Bernoulli
     model = ['linear']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
     
     
-    #title = ['$\\beta=2, n=15000, k/n=0.2$','$\\beta=2, n=15000, r=2$','$\\beta=2, k/n=0.2, r=2$'] # Complete
-    title = ['$\\beta=2, n=15000, p=0.2$','$\\beta=2, n=15000, r=2$','$\\beta=2, p=0.2, r=2$']  # Bernoulli
+    title = ['$\\beta=2, n=15000, k/n=0.2$','$\\beta=2, n=15000, r=2$','$\\beta=2, k/n=0.2, r=2$'] # Complete
+    #title = ['$\\beta=2, n=15000, p=0.2$','$\\beta=2, n=15000, r=2$','$\\beta=2, p=0.2, r=2$']  # Bernoulli
     x_label = ['ratio', 'tp', 'size']
     x_var = ['ratio', 'p', 'n']
-    #x_plot = ['$r$', '$k/n$', '$n$'] #Complete
-    x_plot = ['$r$', '$p$', '$n$'] #Bernoulli
+    x_plot = ['$r$', '$k/n$', '$n$'] #Complete
+    #x_plot = ['$r$', '$p$', '$n$'] #Bernoulli
     model = ['deg2']
     for b in model:
         for ind in range(len(x_var)):
             plot(graph,x_var[ind],x_label[ind],b,x_plot[ind],title[ind],rand_design)
 
-    #title = ['$n=15000, k/n=0.2, r=2$'] #Complete
-    title = ['$n=15000, p=0.2, r=2$'] #Bernoulli
+    title = ['$n=15000, k/n=0.2, r=2$'] #Complete
+    #title = ['$n=15000, p=0.2, r=2$'] #Bernoulli
     x_label = ['varying']
     x_var = ['beta']
     x_plot = ['$\\beta$']
@@ -85,8 +85,8 @@ def plot(graph,x_var,x_label,model,x_plot,title,rand_design,permute=False):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    #newData = df.loc[df['Estimator'].isin(CRD_est)]    #Complete
-    newData = df.loc[df['Estimator'].isin(BRD_est)]     #Bernoulli
+    newData = df.loc[df['Estimator'].isin(CRD_est)]    #Complete
+    #newData = df.loc[df['Estimator'].isin(BRD_est)]     #Bernoulli
 
     sns.lineplot(x=x_var, y='Bias', hue='Estimator', style='Estimator', data=newData, ci='sd', legend='brief', markers=True)
     ax.set_ylim(-0.75,0.75)
@@ -120,6 +120,7 @@ def plot(graph,x_var,x_label,model,x_plot,title,rand_design,permute=False):
 
     plt.savefig(save_path+graph+experiment+'-ours.pdf')
     plt.close()
+    
 
 if __name__ == "__main__":
     main()
