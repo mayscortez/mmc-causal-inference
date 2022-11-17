@@ -17,7 +17,7 @@ def main():
     graph = "er"
     for beta in [1,2]:
         title = ['$\\beta='+str(beta)+', n=15000, p=0.2$','$\\beta='+str(beta)+', n=15000, r=2$','$\\beta='+str(beta)+', p=0.2, r=2$']
-        est_names = ['SNIPE('+str(beta)+')', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
+        est_names = ['PI('+str(beta)+')', 'DM', 'DM($0.75$)', 'LS-Prop', 'LS-Num']
         for ind in [0,1,2]:
             plot(graph,x_var[ind],x_label[ind],'deg'+str(beta),x_plot[ind],title[ind],est_names,permute=True)
 
