@@ -2,3 +2,5 @@
 .pyc
 Code-for-Experiments/__pycache__/nci_polynomial_setup.cpython-37.pyc
 *.pyc
+outputFiles/christina/*
+outputFiles/upload/*
